@@ -18,6 +18,10 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    placeholder: {
+        type: String,
+        default: null,
+    },
     prefix: {
         type: String,
         default: null,
@@ -90,6 +94,7 @@ function onInput(event) {
             <input
                 :value="modelValue"
                 :type="type"
+                :placeholder="placeholder"
                 :min="min"
                 :max="max"
                 :step="step"

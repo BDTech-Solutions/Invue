@@ -15,6 +15,7 @@ Files:
 | `type`       | `String`          | `'text'`| Any native `<input>` type that's just a variant of the same element: `'text'`, `'number'`, `'email'`, `'password'`, `'tel'`, `'url'`, etc. Not its own component — see "Why type is a prop" below. |
 | `label`      | `String`          | `null`  | Rendered above the input. Omit and use the `#label` slot for custom markup. |
 | `hint`       | `String`          | `null`  | Helper text below the input. Hidden automatically when `error` is set. |
+| `placeholder`| `String`          | `null`  | Native `placeholder` attribute.                                  |
 | `prefix`     | `String`          | `null`  | Short text pinned inside the input's left edge (e.g. `"R$"`).  |
 | `suffix`     | `String`          | `null`  | Short text pinned inside the input's right edge (e.g. `"kg"`). |
 | `min`        | `Number, String`  | `null`  | Native `min` attribute. Only meaningful for `type="number"` (ignored by the browser otherwise) — see the `novalidate` warning below. |

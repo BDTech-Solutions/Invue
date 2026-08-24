@@ -32,6 +32,8 @@ class InvueDemoRequest extends FormRequest
             'age' => ['required', 'integer', 'min:18', 'max:120'],
             'interests' => ['required', 'array', 'min:1'],
             'interests.*' => ['string', 'in:Design,Dev,Marketing'],
+            'links' => ['array', 'max:2'],
+            'links.*.url' => ['required', 'url'],
         ];
     }
 }

@@ -1,10 +1,10 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, CheckboxGroup, useInvueField } from 'invue/forms';
+import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, CheckboxGroup, Repeater, useInvueField } from 'invue/forms';
 
 const page = usePage();
 
-const form = useForm({ name: '', role: '', terms: false, bio: '', plan: '', avatar: null, age: '', interests: [] });
+const form = useForm({ name: '', role: '', terms: false, bio: '', plan: '', avatar: null, age: '', interests: [], links: [] });
 const { modelValue: name, error: nameError } = useInvueField(form, 'name');
 const { modelValue: role, error: roleError } = useInvueField(form, 'role');
 const { modelValue: terms, error: termsError } = useInvueField(form, 'terms');
@@ -13,6 +13,7 @@ const { modelValue: plan, error: planError } = useInvueField(form, 'plan');
 const { modelValue: avatar, error: avatarError } = useInvueField(form, 'avatar');
 const { modelValue: age, error: ageError } = useInvueField(form, 'age');
 const { modelValue: interests, error: interestsError } = useInvueField(form, 'interests');
+const { modelValue: links, error: linksError } = useInvueField(form, 'links');
 
 function submit() {
     form.post(route('invue.demo.store'), {
@@ -95,6 +96,22 @@ function submit() {
                 label="Interesses"
                 required
             />
+
+            <Repeater
+                v-model="links"
+                :error="linksError"
+                :new-item="() => ({ url: '' })"
+                label="Links"
+                hint="Ate 2 links"
+            >
+                <template #default="{ item, update }">
+                    <TextInput
+                        :model-value="item.url"
+                        placeholder="https://..."
+                        @update:model-value="(value) => update({ ...item, url: value })"
+                    />
+                </template>
+            </Repeater>
 
             <button
                 type="submit"

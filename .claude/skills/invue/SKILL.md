@@ -133,7 +133,19 @@ The rule: same native element, differs only by attribute/behavior → one
 component with a prop (`type="email"`, `type="tel"`, `type="url"` all
 belong on `TextInput`, not new files). Genuinely different native element
 or interaction model (`Textarea`, `Select`, `Checkbox`/`CheckboxGroup`,
-`RadioGroup`, `FileUpload`) → its own component.
+`RadioGroup`, `FileUpload`, `Repeater`) → its own component.
+
+**Every Base component's root element is a wrapping `<div class="invue-form-field">`
+— an undeclared prop silently lands there, not on the actual `<input>`/`<textarea>`/`<select>`.**
+This is plain Vue single-root attrs inheritance, not an Invue-specific
+mechanism, but it bit us once: `Base/TextInput.vue` didn't declare
+`placeholder`, so `<TextInput placeholder="...">` rendered a `placeholder`
+attribute on the outer `<div>` (harmless there) while the actual `<input>`
+silently had none — no error, no console warning, the prop just went to
+the wrong element. Found only because `Repeater`'s test used a placeholder
+and the input visibly had none. **When a field doesn't behave as expected
+and no error explains why, check whether the prop was actually declared —
+`$attrs` fallthrough hides the mistake instead of erroring.**
 
 ## `useInvueField(form, name)` — destructure it, don't nest it
 
