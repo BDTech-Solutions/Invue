@@ -1,11 +1,12 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TextInput, useInvueField } from 'invue/forms';
+import { TextInput, Select, useInvueField } from 'invue/forms';
 
 const page = usePage();
 
-const form = useForm({ name: '' });
+const form = useForm({ name: '', role: '' });
 const { modelValue: name, error: nameError } = useInvueField(form, 'name');
+const { modelValue: role, error: roleError } = useInvueField(form, 'role');
 
 function submit() {
     form.post(route('invue.demo.store'), {
@@ -28,6 +29,15 @@ function submit() {
                 :error="nameError"
                 label="Nome"
                 hint="Minimo de 3 caracteres"
+                required
+            />
+
+            <Select
+                v-model="role"
+                :error="roleError"
+                :options="['Admin', 'Editor', 'Viewer']"
+                label="Funcao"
+                placeholder="Selecione uma funcao"
                 required
             />
 
