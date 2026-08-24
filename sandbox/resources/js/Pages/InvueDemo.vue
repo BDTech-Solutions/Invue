@@ -1,12 +1,13 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TextInput, Select, useInvueField } from 'invue/forms';
+import { TextInput, Select, Checkbox, useInvueField } from 'invue/forms';
 
 const page = usePage();
 
-const form = useForm({ name: '', role: '' });
+const form = useForm({ name: '', role: '', terms: false });
 const { modelValue: name, error: nameError } = useInvueField(form, 'name');
 const { modelValue: role, error: roleError } = useInvueField(form, 'role');
+const { modelValue: terms, error: termsError } = useInvueField(form, 'terms');
 
 function submit() {
     form.post(route('invue.demo.store'), {
@@ -38,6 +39,13 @@ function submit() {
                 :options="['Admin', 'Editor', 'Viewer']"
                 label="Funcao"
                 placeholder="Selecione uma funcao"
+                required
+            />
+
+            <Checkbox
+                v-model="terms"
+                :error="termsError"
+                label="Aceito os termos"
                 required
             />
 

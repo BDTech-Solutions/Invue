@@ -25,6 +25,7 @@ class InvueDemoRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'min:3'],
             'role' => ['required', 'string', 'in:Admin,Editor,Viewer'],
+            'terms' => ['accepted'],
         ];
     }
 }
