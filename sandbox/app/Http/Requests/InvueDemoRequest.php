@@ -29,6 +29,7 @@ class InvueDemoRequest extends FormRequest
             'bio' => ['nullable', 'string', 'max:20'],
             'plan' => ['required', 'string', 'in:Free,Pro,Enterprise'],
             'avatar' => ['nullable', 'file', 'image', 'max:2048'],
+            'age' => ['required', 'integer', 'min:18', 'max:120'],
         ];
     }
 }

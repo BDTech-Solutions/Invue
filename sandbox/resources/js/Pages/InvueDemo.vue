@@ -1,16 +1,17 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, useInvueField } from 'invue/forms';
+import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, NumberInput, useInvueField } from 'invue/forms';
 
 const page = usePage();
 
-const form = useForm({ name: '', role: '', terms: false, bio: '', plan: '', avatar: null });
+const form = useForm({ name: '', role: '', terms: false, bio: '', plan: '', avatar: null, age: '' });
 const { modelValue: name, error: nameError } = useInvueField(form, 'name');
 const { modelValue: role, error: roleError } = useInvueField(form, 'role');
 const { modelValue: terms, error: termsError } = useInvueField(form, 'terms');
 const { modelValue: bio, error: bioError } = useInvueField(form, 'bio');
 const { modelValue: plan, error: planError } = useInvueField(form, 'plan');
 const { modelValue: avatar, error: avatarError } = useInvueField(form, 'avatar');
+const { modelValue: age, error: ageError } = useInvueField(form, 'age');
 
 function submit() {
     form.post(route('invue.demo.store'), {
@@ -27,7 +28,7 @@ function submit() {
             {{ page.props.flash.status }}
         </p>
 
-        <form class="space-y-4" @submit.prevent="submit">
+        <form class="space-y-4" novalidate @submit.prevent="submit">
             <TextInput
                 v-model="name"
                 :error="nameError"
@@ -74,6 +75,15 @@ function submit() {
                 accept="image/*"
                 label="Avatar"
                 hint="PNG ou JPG, ate 2MB"
+            />
+
+            <NumberInput
+                v-model="age"
+                :error="ageError"
+                label="Idade"
+                min="18"
+                max="120"
+                required
             />
 
             <button

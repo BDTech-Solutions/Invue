@@ -1,6 +1,6 @@
 ---
 name: invue
-description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/.
+description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, the native-HTML5-validation-vs-novalidate gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/.
 ---
 
 # Invue
@@ -67,6 +67,30 @@ export default {
 Skipping this doesn't error — it silently purges every Tailwind class used
 inside any `invue/*` component. If a component's styling looks unstyled or
 wrong in a consuming app, check this first.
+
+## Known gotcha: native HTML5 validation silently fights server-side validation
+
+Every field's docs say "validation is server-side via `FormRequest`", and
+most props that look like validation (`required`) are deliberately
+cosmetic-only for exactly that reason. But a few native HTML attributes
+*are* real browser constraint validation — `NumberInput`'s `min`/`max`
+being the current example (needed for the spinner arrows to clamp
+correctly) — and those silently **block form submission before your
+`@submit` handler ever runs**: no network request, no console error, no
+visible sign anything happened except the browser's own unstyled
+validation bubble. This cost real debugging time once already (see git log
+around the NumberInput commit).
+
+**Fix: put `novalidate` on every `<form>` that uses `invue/forms` fields.**
+This isn't optional per-component — it's the only way to guarantee the
+framework's server-authoritative validation model actually holds, for
+every field, present and future (a future `DatePicker` with a native
+`min`/`max` date, or anything ever using `type="email"`/`type="url"`,
+would hit the identical trap otherwise).
+
+```vue
+<form novalidate @submit.prevent="submit">
+```
 
 ## Component registry (`invue/core`)
 
@@ -140,9 +164,11 @@ Demo route: `/invue-demo` (`resources/js/Pages/InvueDemo.vue`), backed by
 
 **Prefer browser-driven testing over curl/build-only checks.** A `vite build`
 or an Inertia JSON `curl` round-trip proves modules resolve and validation
-plumbing works, but *all three bugs found in this project so far* (the
+plumbing works, but every real bug found in this project so far (the
 `v-model` unwrap bug, the CSS-specificity border bug, the Tailwind
-content-scanning bug) were only visible by actually rendering the page in a
+content-scanning bug, the native-validation-blocks-submit bug) was only
+visible by actually rendering the page — and, for the last one, actually
+clicking submit and checking whether a request fired at all — in a
 browser. This environment has no `chromium-cli`; Playwright + a locally
 downloaded Chromium (`npx playwright install chromium`, no `--with-deps`,
 since that needs interactive `sudo`) works fine as a fallback — see git log
