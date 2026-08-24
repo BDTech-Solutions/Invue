@@ -19,7 +19,13 @@ Route::get('/invue-demo', function () {
 })->name('invue.demo');
 
 Route::post('/invue-demo', function (App\Http\Requests\InvueDemoRequest $request) {
-    return back()->with('status', 'Formulario enviado com sucesso.');
+    $status = 'Formulario enviado com sucesso.';
+
+    if ($request->hasFile('avatar')) {
+        $status .= ' Arquivo recebido: '.$request->file('avatar')->getClientOriginalName();
+    }
+
+    return back()->with('status', $status);
 })->name('invue.demo.store');
 
 Route::get('/dashboard', function () {

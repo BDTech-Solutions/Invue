@@ -28,6 +28,7 @@ class InvueDemoRequest extends FormRequest
             'terms' => ['accepted'],
             'bio' => ['nullable', 'string', 'max:20'],
             'plan' => ['required', 'string', 'in:Free,Pro,Enterprise'],
+            'avatar' => ['nullable', 'file', 'image', 'max:2048'],
         ];
     }
 }
