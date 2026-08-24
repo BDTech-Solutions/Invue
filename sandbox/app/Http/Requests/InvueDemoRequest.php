@@ -30,6 +30,8 @@ class InvueDemoRequest extends FormRequest
             'plan' => ['required', 'string', 'in:Free,Pro,Enterprise'],
             'avatar' => ['nullable', 'file', 'image', 'max:2048'],
             'age' => ['required', 'integer', 'min:18', 'max:120'],
+            'interests' => ['required', 'array', 'min:1'],
+            'interests.*' => ['string', 'in:Design,Dev,Marketing'],
         ];
     }
 }
