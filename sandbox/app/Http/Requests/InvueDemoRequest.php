@@ -27,6 +27,7 @@ class InvueDemoRequest extends FormRequest
             'role' => ['required', 'string', 'in:Admin,Editor,Viewer'],
             'terms' => ['accepted'],
             'bio' => ['nullable', 'string', 'max:20'],
+            'plan' => ['required', 'string', 'in:Free,Pro,Enterprise'],
         ];
     }
 }

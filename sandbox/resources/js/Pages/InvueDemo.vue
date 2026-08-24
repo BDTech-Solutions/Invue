@@ -1,14 +1,15 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TextInput, Select, Checkbox, Textarea, useInvueField } from 'invue/forms';
+import { TextInput, Select, Checkbox, Textarea, RadioGroup, useInvueField } from 'invue/forms';
 
 const page = usePage();
 
-const form = useForm({ name: '', role: '', terms: false, bio: '' });
+const form = useForm({ name: '', role: '', terms: false, bio: '', plan: '' });
 const { modelValue: name, error: nameError } = useInvueField(form, 'name');
 const { modelValue: role, error: roleError } = useInvueField(form, 'role');
 const { modelValue: terms, error: termsError } = useInvueField(form, 'terms');
 const { modelValue: bio, error: bioError } = useInvueField(form, 'bio');
+const { modelValue: plan, error: planError } = useInvueField(form, 'plan');
 
 function submit() {
     form.post(route('invue.demo.store'), {
@@ -56,6 +57,14 @@ function submit() {
                 label="Bio"
                 hint="Ate 20 caracteres"
                 rows="2"
+            />
+
+            <RadioGroup
+                v-model="plan"
+                :error="planError"
+                :options="['Free', 'Pro', 'Enterprise']"
+                label="Plano"
+                required
             />
 
             <button
