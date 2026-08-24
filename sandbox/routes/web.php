@@ -25,6 +25,8 @@ Route::post('/invue-demo', function (App\Http\Requests\InvueDemoRequest $request
         $status .= ' Arquivo recebido: '.$request->file('avatar')->getClientOriginalName();
     }
 
+    $status .= ' Origem: '.$request->input('referral_source');
+
     return back()->with('status', $status);
 })->name('invue.demo.store');
 

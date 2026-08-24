@@ -1,10 +1,13 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, CheckboxGroup, Repeater, useInvueField } from 'invue/forms';
+import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, CheckboxGroup, Repeater, TagsInput, Hidden, ToggleButtons, KeyValue, useInvueField } from 'invue/forms';
 
 const page = usePage();
 
-const form = useForm({ name: '', role: '', terms: false, bio: '', plan: '', avatar: null, age: '', interests: [], links: [] });
+const form = useForm({
+    name: '', role: '', terms: false, bio: '', plan: '', avatar: null, age: '', interests: [], links: [],
+    tags: [], tier: '', metadata: [], referral_source: 'invue-demo',
+});
 const { modelValue: name, error: nameError } = useInvueField(form, 'name');
 const { modelValue: role, error: roleError } = useInvueField(form, 'role');
 const { modelValue: terms, error: termsError } = useInvueField(form, 'terms');
@@ -14,6 +17,10 @@ const { modelValue: avatar, error: avatarError } = useInvueField(form, 'avatar')
 const { modelValue: age, error: ageError } = useInvueField(form, 'age');
 const { modelValue: interests, error: interestsError } = useInvueField(form, 'interests');
 const { modelValue: links, error: linksError } = useInvueField(form, 'links');
+const { modelValue: tags, error: tagsError } = useInvueField(form, 'tags');
+const { modelValue: tier, error: tierError } = useInvueField(form, 'tier');
+const { modelValue: metadata, error: metadataError } = useInvueField(form, 'metadata');
+const { modelValue: referralSource } = useInvueField(form, 'referral_source');
 
 function submit() {
     form.post(route('invue.demo.store'), {
@@ -112,6 +119,31 @@ function submit() {
                     />
                 </template>
             </Repeater>
+
+            <TagsInput
+                v-model="tags"
+                :error="tagsError"
+                label="Tags"
+                hint="Ate 3, Enter ou virgula pra adicionar"
+                placeholder="nova tag..."
+            />
+
+            <ToggleButtons
+                v-model="tier"
+                :error="tierError"
+                :options="['Bronze', 'Silver', 'Gold']"
+                label="Tier"
+                required
+            />
+
+            <KeyValue
+                v-model="metadata"
+                :error="metadataError"
+                label="Metadata"
+                hint="Ate 2 pares"
+            />
+
+            <Hidden v-model="referralSource" />
 
             <button
                 type="submit"

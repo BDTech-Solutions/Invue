@@ -34,6 +34,10 @@ class InvueDemoRequest extends FormRequest
             'interests.*' => ['string', 'in:Design,Dev,Marketing'],
             'links' => ['array', 'max:2'],
             'links.*.url' => ['required', 'url'],
+            'tags' => ['array', 'max:3'],
+            'tier' => ['required', 'string', 'in:Bronze,Silver,Gold'],
+            'metadata' => ['array', 'max:2'],
+            'referral_source' => ['required', 'string'],
         ];
     }
 }

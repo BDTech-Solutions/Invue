@@ -133,7 +133,11 @@ The rule: same native element, differs only by attribute/behavior → one
 component with a prop (`type="email"`, `type="tel"`, `type="url"` all
 belong on `TextInput`, not new files). Genuinely different native element
 or interaction model (`Textarea`, `Select`, `Checkbox`/`CheckboxGroup`,
-`RadioGroup`, `FileUpload`, `Repeater`) → its own component.
+`RadioGroup`, `FileUpload`, `Repeater`, `TagsInput`, `ToggleButtons`) → its
+own component. (`ToggleButtons` has the identical `options`/single-value
+model as `RadioGroup`, but earned its own component anyway because the
+markup is plain `<button>`s, not native `<input type="radio">` — same
+data shape isn't automatically the same rule as same native element.)
 
 **Every Base component's root element is a wrapping `<div class="invue-form-field">`
 — an undeclared prop silently lands there, not on the actual `<input>`/`<textarea>`/`<select>`.**
@@ -146,6 +150,19 @@ the wrong element. Found only because `Repeater`'s test used a placeholder
 and the input visibly had none. **When a field doesn't behave as expected
 and no error explains why, check whether the prop was actually declared —
 `$attrs` fallthrough hides the mistake instead of erroring.**
+
+**A field can be a composition of other fields instead of raw markup.**
+`Base/KeyValue.vue` isn't a new primitive — it's a `Repeater` whose row
+template (two `TextInput`s) is built in, saving the caller from writing
+that template themselves every time. It imports the **public wrapper**
+versions (`../Repeater.vue`, `../TextInput.vue`), not their `Base`
+components, specifically so a global registry swap of `forms.Repeater` or
+`forms.TextInput` also applies inside every `KeyValue` row — composing
+from the resolved public component, not the raw default, is what makes
+that inheritance work. Reach for this shape before writing new raw markup
+whenever a field is really "an existing field/pattern with a fixed
+row/shape" (a date-range picker built from two `TextInput type="date"`,
+say) rather than a genuinely new interaction.
 
 ## `useInvueField(form, name)` — destructure it, don't nest it
 
