@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import invueContent from './vendor/invue/core/tailwind.content.js';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -8,6 +9,7 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
+        ...invueContent,
     ],
 
     theme: {

@@ -5,7 +5,7 @@ import { TextInput, useInvueField } from 'invue/forms';
 const page = usePage();
 
 const form = useForm({ name: '' });
-const name = useInvueField(form, 'name');
+const { modelValue: name, error: nameError } = useInvueField(form, 'name');
 
 function submit() {
     form.post(route('invue.demo.store'), {
@@ -24,8 +24,8 @@ function submit() {
 
         <form class="space-y-4" @submit.prevent="submit">
             <TextInput
-                v-model="name.modelValue"
-                :error="name.error"
+                v-model="name"
+                :error="nameError"
                 label="Nome"
                 hint="Minimo de 3 caracteres"
                 required

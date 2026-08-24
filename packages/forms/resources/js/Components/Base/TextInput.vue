@@ -59,8 +59,10 @@ defineEmits(['update:modelValue'])
                 type="text"
                 :disabled="disabled"
                 :class="[
-                    'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm',
-                    { 'pl-8': prefix || $slots.prefix, 'pr-8': suffix || $slots.suffix, 'border-red-400': error },
+                    'block w-full rounded-md shadow-sm sm:text-sm',
+                    error ? 'border-red-400 focus:border-red-400' : 'border-gray-300 focus:border-indigo-500',
+                    'focus:ring-indigo-500',
+                    { 'pl-8': prefix || $slots.prefix, 'pr-8': suffix || $slots.suffix },
                 ]"
                 @input="$emit('update:modelValue', $event.target.value)"
             />
