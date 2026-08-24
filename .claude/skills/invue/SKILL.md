@@ -73,13 +73,14 @@ wrong in a consuming app, check this first.
 Every field's docs say "validation is server-side via `FormRequest`", and
 most props that look like validation (`required`) are deliberately
 cosmetic-only for exactly that reason. But a few native HTML attributes
-*are* real browser constraint validation — `NumberInput`'s `min`/`max`
-being the current example (needed for the spinner arrows to clamp
-correctly) — and those silently **block form submission before your
-`@submit` handler ever runs**: no network request, no console error, no
-visible sign anything happened except the browser's own unstyled
-validation bubble. This cost real debugging time once already (see git log
-around the NumberInput commit).
+*are* real browser constraint validation — `TextInput`'s `min`/`max` props
+(only meaningful with `type="number"`) being the current example (needed
+for the spinner arrows to clamp correctly) — and those silently **block
+form submission before your `@submit` handler ever runs**: no network
+request, no console error, no visible sign anything happened except the
+browser's own unstyled validation bubble. This cost real debugging time
+once already (see git log around the "Add NumberInput" and the later
+TextInput/NumberInput merge commits).
 
 **Fix: put `novalidate` on every `<form>` that uses `invue/forms` fields.**
 This isn't optional per-component — it's the only way to guarantee the
@@ -121,6 +122,18 @@ Every field in `invue/forms` follows the same two-file shape:
 
 When adding a new field, copy this shape — don't skip the wrapper, it's the
 whole mechanism the registry override depends on.
+
+**Before adding a new field file, check whether it's really a new native
+element.** `TextInput` briefly had a sibling `NumberInput` that was just
+`<input type="number">` with identical label/hint/error markup — merged
+back into `TextInput` as a `type` prop once that redundancy was obvious,
+matching how Filament uses one `TextInput` class with `->numeric()`/
+`->email()`/`->password()` modifiers rather than separate field classes.
+The rule: same native element, differs only by attribute/behavior → one
+component with a prop (`type="email"`, `type="tel"`, `type="url"` all
+belong on `TextInput`, not new files). Genuinely different native element
+or interaction model (`Textarea`, `Select`, `Checkbox`/`CheckboxGroup`,
+`RadioGroup`, `FileUpload`) → its own component.
 
 ## `useInvueField(form, name)` — destructure it, don't nest it
 

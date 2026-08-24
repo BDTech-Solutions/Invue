@@ -1,8 +1,14 @@
 <script setup>
-defineProps({
+const props = defineProps({
     modelValue: {
-        type: String,
+        type: [String, Number],
         default: '',
+    },
+    // Any native <input> type that's just a variant of the same element:
+    // 'text' (default), 'number', 'email', 'password', 'tel', 'url', ...
+    type: {
+        type: String,
+        default: 'text',
     },
     label: {
         type: String,
@@ -20,6 +26,19 @@ defineProps({
         type: String,
         default: null,
     },
+    // Only meaningful for type="number" — ignored by the browser for other types.
+    min: {
+        type: [Number, String],
+        default: null,
+    },
+    max: {
+        type: [Number, String],
+        default: null,
+    },
+    step: {
+        type: [Number, String],
+        default: null,
+    },
     required: {
         type: Boolean,
         default: false,
@@ -34,7 +53,21 @@ defineProps({
     },
 })
 
-defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue'])
+
+// type="number"'s event.target.value is always a string even though the browser only
+// lets the user type valid numbers — coerce to a real Number on the way out (keeping ''
+// for "empty" instead of letting it collapse to 0 or NaN). Every other type stays a string.
+function onInput(event) {
+    const raw = event.target.value
+
+    if (props.type === 'number') {
+        emit('update:modelValue', raw === '' ? '' : Number(raw))
+        return
+    }
+
+    emit('update:modelValue', raw)
+}
 </script>
 
 <template>
@@ -56,7 +89,10 @@ defineEmits(['update:modelValue'])
 
             <input
                 :value="modelValue"
-                type="text"
+                :type="type"
+                :min="min"
+                :max="max"
+                :step="step"
                 :disabled="disabled"
                 :class="[
                     'block w-full rounded-md shadow-sm sm:text-sm',
@@ -64,7 +100,7 @@ defineEmits(['update:modelValue'])
                     'focus:ring-indigo-500',
                     { 'pl-8': prefix || $slots.prefix, 'pr-8': suffix || $slots.suffix },
                 ]"
-                @input="$emit('update:modelValue', $event.target.value)"
+                @input="onInput"
             />
 
             <span

@@ -1,6 +1,6 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, NumberInput, CheckboxGroup, useInvueField } from 'invue/forms';
+import { TextInput, Select, Checkbox, Textarea, RadioGroup, FileUpload, CheckboxGroup, useInvueField } from 'invue/forms';
 
 const page = usePage();
 
@@ -78,9 +78,10 @@ function submit() {
                 hint="PNG ou JPG, ate 2MB"
             />
 
-            <NumberInput
+            <TextInput
                 v-model="age"
                 :error="ageError"
+                type="number"
                 label="Idade"
                 min="18"
                 max="120"
