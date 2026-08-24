@@ -1,0 +1,27 @@
+{
+    "name": "bdtech-solutions/invue",
+    "description": "Invue — a native Vue 3 + Inertia.js alternative to FilamentPHP for Laravel.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "invue/core": "@dev",
+        "invue/forms": "@dev"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^2.0|^3.0",
+        "laravel/pint": "^1.13"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/*"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "name": "invue-monorepo",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ]
+}

@@ -1,0 +1,37 @@
+{
+    "name": "invue/forms",
+    "description": "Native Vue 3 form components for the Invue framework, wired to Laravel validation via Inertia.",
+    "keywords": ["laravel", "inertia", "vue", "forms", "invue"],
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "inertiajs/inertia-laravel": "^2.0|^3.0",
+        "invue/core": "self.version"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^2.0|^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Invue\\Forms\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Invue\\Forms\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Invue\\Forms\\FormsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
