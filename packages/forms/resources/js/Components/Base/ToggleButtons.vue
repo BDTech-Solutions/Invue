@@ -62,7 +62,7 @@ const normalizedOptions = computed(() =>
                 :class="[
                     'rounded-md px-3 py-1.5 text-sm font-medium shadow-sm disabled:opacity-50',
                     modelValue === option.value
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-green-600 text-white'
                         : error
                             ? 'border border-red-400 bg-white text-gray-700'
                             : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',

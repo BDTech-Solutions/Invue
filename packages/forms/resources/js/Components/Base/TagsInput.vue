@@ -82,13 +82,13 @@ function onKeydown(event) {
             <span
                 v-for="(tag, index) in modelValue"
                 :key="tag"
-                class="inline-flex items-center gap-1 rounded bg-indigo-50 px-2 py-0.5 text-sm text-indigo-700"
+                class="inline-flex items-center gap-1 rounded bg-green-50 px-2 py-0.5 text-sm text-green-700"
             >
                 {{ tag }}
                 <button
                     type="button"
                     :disabled="disabled"
-                    class="text-indigo-400 hover:text-indigo-600 disabled:opacity-50"
+                    class="text-green-400 hover:text-green-600 disabled:opacity-50"
                     @click="removeTag(index)"
                 >
                     &times;

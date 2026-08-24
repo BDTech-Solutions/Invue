@@ -53,7 +53,7 @@ defineEmits(['update:modelValue'])
                 'block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm file:font-semibold',
                 error
                     ? 'file:bg-red-50 file:text-red-600 hover:file:bg-red-100'
-                    : 'file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100',
+                    : 'file:bg-green-50 file:text-green-600 hover:file:bg-green-100',
             ]"
             @change="$emit('update:modelValue', $event.target.files[0] ?? null)"
         />

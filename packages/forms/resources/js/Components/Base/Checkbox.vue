@@ -37,8 +37,8 @@ defineEmits(['update:modelValue'])
                 :checked="modelValue"
                 :disabled="disabled"
                 :class="[
-                    'rounded shadow-sm focus:ring-indigo-500',
-                    error ? 'border-red-400 text-red-500' : 'border-gray-300 text-indigo-600',
+                    'rounded shadow-sm focus:ring-green-500',
+                    error ? 'border-red-400 text-red-500' : 'border-gray-300 text-green-600',
                 ]"
                 @change="$emit('update:modelValue', $event.target.checked)"
             />

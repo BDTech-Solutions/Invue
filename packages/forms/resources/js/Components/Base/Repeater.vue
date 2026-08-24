@@ -81,7 +81,7 @@ function update(index, value) {
         <button
             type="button"
             :disabled="disabled"
-            class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
+            class="mt-2 text-sm font-medium text-green-600 hover:text-green-700 disabled:opacity-50"
             @click="add"
         >
             + Adicionar

@@ -62,8 +62,8 @@ const normalizedOptions = computed(() =>
             :disabled="disabled"
             :class="[
                 'block w-full rounded-md shadow-sm sm:text-sm',
-                error ? 'border-red-400 focus:border-red-400' : 'border-gray-300 focus:border-indigo-500',
-                'focus:ring-indigo-500',
+                error ? 'border-red-400 focus:border-red-400' : 'border-gray-300 focus:border-green-500',
+                'focus:ring-green-500',
             ]"
             @change="$emit('update:modelValue', $event.target.value)"
         >

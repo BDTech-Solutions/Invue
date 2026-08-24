@@ -147,7 +147,7 @@ function submit() {
 
             <button
                 type="submit"
-                class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+                class="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-500"
                 :disabled="form.processing"
             >
                 Enviar
