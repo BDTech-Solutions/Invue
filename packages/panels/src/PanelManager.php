@@ -73,7 +73,10 @@ class PanelManager
     }
 
     /**
-     * @return array<class-string<Resource>>
+     * @return list<string> FQCNs of Resource subclasses — not typed as
+     *                      class-string<Resource>: Pint's phpdoc_types fixer
+     *                      collides that with PHP's builtin `resource`
+     *                      pseudo-type and force-lowercases it every run.
      */
     public function discoverResources(Panel $panel): array
     {

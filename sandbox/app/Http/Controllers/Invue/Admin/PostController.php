@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Invue\Notifications\Notification;
 use Invue\Tables\TableQuery;
 
 class PostController extends Controller
@@ -31,7 +32,13 @@ class PostController extends Controller
 
     public function store(PostRequest $request): RedirectResponse
     {
-        Post::create($request->validated());
+        $post = Post::create($request->validated());
+
+        Notification::make()
+            ->title('Post criado')
+            ->body("\"{$post->title}\" foi salvo.")
+            ->success()
+            ->send();
 
         return to_route('invue.admin.posts.index');
     }
@@ -47,12 +54,23 @@ class PostController extends Controller
     {
         $post->update($request->validated());
 
+        Notification::make()
+            ->title('Post atualizado')
+            ->body("\"{$post->title}\" foi salvo.")
+            ->success()
+            ->send();
+
         return to_route('invue.admin.posts.index');
     }
 
     public function destroy(Post $post): RedirectResponse
     {
         $post->delete();
+
+        Notification::make()
+            ->title('Post removido')
+            ->color('gray')
+            ->send();
 
         return to_route('invue.admin.posts.index');
     }

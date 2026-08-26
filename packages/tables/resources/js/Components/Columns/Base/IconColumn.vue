@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { Icon } from 'invue/core'
 import { getNestedValue } from '../../../support/getNestedValue'
 
 const TEXT_COLOR_CLASSES = {
@@ -28,13 +29,16 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    // Icon *names*, resolved through invue/core's <Icon> registry (see
+    // Icon.vue) — not literal glyphs. Register 'check'/'x' (Lucide's own
+    // names) via invue.registerIcons({...}), or any other registered name.
     trueIcon: {
         type: String,
-        default: '✓',
+        default: 'check',
     },
     falseIcon: {
         type: String,
-        default: '✕',
+        default: 'x',
     },
     trueColor: {
         type: String,
@@ -76,15 +80,13 @@ const resolvedColor = computed(() => {
     return typeof props.color === 'function' ? props.color(rawValue.value, props.row) : props.color
 })
 
-const sizeClass = computed(() => ({ sm: 'text-sm', md: 'text-base', lg: 'text-lg' })[props.size] ?? 'text-base')
+const sizeClass = computed(() => ({ sm: 'h-3.5 w-3.5', md: 'h-4 w-4', lg: 'h-5 w-5' })[props.size] ?? 'h-4 w-4')
 </script>
 
 <template>
-    <span
+    <Icon
         v-if="resolvedIcon"
+        :name="resolvedIcon"
         :class="[TEXT_COLOR_CLASSES[resolvedColor] ?? TEXT_COLOR_CLASSES.gray, sizeClass]"
-        aria-hidden="true"
-    >
-        {{ resolvedIcon }}
-    </span>
+    />
 </template>

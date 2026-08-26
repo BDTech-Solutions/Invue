@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvueNotificationsDemoController;
 use App\Http\Controllers\InvueTablesDemoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Requests\InvueDemoRequest;
@@ -33,6 +34,9 @@ Route::post('/invue-demo', function (InvueDemoRequest $request) {
 })->name('invue.demo.store');
 
 Route::get('/invue-tables-demo', InvueTablesDemoController::class)->name('invue.tables.demo');
+
+Route::get('/invue-notifications-demo', [InvueNotificationsDemoController::class, 'show'])->name('invue.notifications.demo');
+Route::post('/invue-notifications-demo', [InvueNotificationsDemoController::class, 'send'])->name('invue.notifications.demo.send');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

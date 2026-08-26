@@ -8,4 +8,6 @@ use Invue\Panels\Resource;
 class PostResource extends Resource
 {
     protected static string $model = Post::class;
+
+    protected static ?string $navigationIcon = 'file-text';
 }

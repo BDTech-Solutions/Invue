@@ -1,6 +1,6 @@
 ---
 name: invue
-description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, the native-HTML5-validation-vs-novalidate gotcha, the preserveSymlinks/vendor-npm-import build gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/. invue/tables (Filament Table Builder ideas translated to Invue's no-PHP-builder/no-Livewire philosophy) has its own full design spec in tables/README.md. invue/panels (Filament Panel/Resource CRUD scaffolding — make:invue-panel / make:invue-resource — translated the same way, plus the registry-swappable sidebar/topbar shell) has its own design spec in panels/README.md.
+description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, the native-HTML5-validation-vs-novalidate gotcha, the preserveSymlinks/vendor-npm-import build gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/. invue/tables (Filament Table Builder ideas translated to Invue's no-PHP-builder/no-Livewire philosophy) has its own full design spec in tables/README.md. invue/panels (Filament Panel/Resource CRUD scaffolding — make:invue-panel / make:invue-resource — translated the same way, plus the registry-swappable sidebar/topbar shell) has its own design spec in panels/README.md. invue/notifications (Filament's ephemeral toast Notification builder, registry-swappable Toast/Container, no persisted/database notifications in v1) has its own design spec in notifications/README.md.
 ---
 
 # Invue
@@ -140,6 +140,39 @@ const invue = createInvue();
 invue.registry.register('forms.TextInput', MyCustomTextInput);
 app.use(invue);
 ```
+
+## Icons (`invue/core`'s `<Icon>`)
+
+`icon`/`trueIcon`/`falseIcon` props across `invue/tables` (`IconColumn`)
+and `invue/notifications` (`Notification`/`Toast`) are **names**, not
+literal glyphs — resolved client-side through `invue/core`'s `<Icon name="...">`.
+`invue/core` does **not** bundle or import any icon library itself. The
+consuming app statically imports whichever icons it actually uses (from
+Lucide, `@lucide/vue` — ISC-licensed, fully free — or anything else) and
+registers them once:
+
+```js
+import { createInvue } from 'invue/core'
+import { Check, CircleCheck, X } from '@lucide/vue'
+
+const invue = createInvue()
+invue.registerIcons({ check: Check, 'circle-check': CircleCheck, x: X })
+```
+
+This is deliberate, not an oversight: Lucide's own docs explicitly
+recommend *against* a built-in "resolve any icon name by string" component
+in production, because it imports every icon into the build regardless of
+which ones are actually used — see their [Dynamic Icon Component
+docs](https://lucide.dev/guide/react/advanced/dynamic-icon-component).
+Explicit per-icon registration keeps the bundle to exactly what's imported,
+and isn't tied to Lucide specifically — any icon set (or hand-rolled SVG
+components) can register under the same `icons.<name>` key.
+
+`Icon.vue` is the **one exception** to the Base + resolving-wrapper rule
+below — there's no single default implementation to swap, only an N-entry
+name→component lookup the registry already provides directly. In dev mode
+it `console.warn`s once per unregistered name actually rendered, instead of
+failing silently.
 
 ## The forms component pattern
 
@@ -302,6 +335,27 @@ touching `packages/panels/` — it covers the `Panel`/`PanelProvider`/
 discovery (no explicit route registration needed), and exactly how
 `make:invue-resource` infers fields from an already-migrated table's real
 columns via `Schema::getColumns()`.
+
+## The notifications package (`invue/notifications`)
+
+Filament's ephemeral `Notification::make()->title()->body()->icon()->color()->send()`,
+translated the same way: PHP stays a plain data/trigger builder (never
+markup), `->send()` flashes onto the session for the next request, and the
+consuming app hand-wires `'notifications' => fn () => Notification::flashed()`
+into its own `HandleInertiaRequests::share()` — no auto-registered global
+middleware, since `send()` can be called from any controller, not just
+routes the package owns. `<Notifications />` mounts once, app-wide, in
+`app.js` (a fragment root render, not per-layout). Registry keys
+`notifications.Toast`/`notifications.Container` are the actual point of the
+package — a future "store" swaps toast styles with zero app changes.
+`Notify.make()...send()` (from `invue/notifications`) is a client-only
+mirror of the same builder — same shortcuts, same icon/color conventions —
+that pushes straight into the shared `store.js` singleton instead of the
+session, with zero server round-trip; the PHP `Notification` class is
+untouched by this, it's a second entry point into the same render
+pipeline. No persisted/database notifications (bell icon, unread count) in
+v1 — see **`notifications/README.md`** in full before touching
+`packages/notifications/`.
 
 ## Per-component docs
 

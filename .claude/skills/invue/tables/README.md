@@ -286,6 +286,12 @@ different than `Repeater`'s existing `:new-item="() => ({...})"` pattern.
 
 ### `IconColumn`
 
+`icon`/`trueIcon`/`falseIcon` are **names** resolved through `invue/core`'s
+`<Icon>` registry (see the parent `SKILL.md`'s "Icons" section) — not
+literal glyphs/SVG paths. `boolean` mode defaults to `trueIcon="check"` /
+`falseIcon="x"` (Lucide's own names), which only render if the consuming
+app registered them via `invue.registerIcons({...})`.
+
 | Prop | Filament equivalent |
 |---|---|
 | `icon` | `->icon()` |

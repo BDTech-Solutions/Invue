@@ -37,7 +37,7 @@ packages/panels/
   resources/js/
     Components/
       PanelLayout.vue -> Base/PanelLayout.vue   composes the *resolved* Sidebar + Topbar around a slot
-      Sidebar.vue -> Base/Sidebar.vue           reads `invuePanel.navigation`, Inertia <Link>s, active-path highlight
+      Sidebar.vue -> Base/Sidebar.vue           reads `invuePanel.navigation`, Inertia <Link>s, active-path highlight, per-item icon via invue/core's <Icon>
       Topbar.vue -> Base/Topbar.vue             brand name/logo + a slot for app-specific content
 ```
 
@@ -75,8 +75,12 @@ in `app.js` replaced the rendered sidebar with zero changes to
 - A **Resource** (`{Model}Resource extends Invue\Panels\Resource`) is
   metadata for one model inside a panel: which model, its nav label/icon/
   group, and the (overridable) convention for finding its controller.
-  **No `form()`/`table()` methods** — field/column layout lives in the
-  generated `.vue` pages, real files, not runtime PHP config.
+  `$navigationIcon` is an **icon name** (e.g. `'file-text'`), resolved
+  client-side through `invue/core`'s `<Icon>` registry — see the parent
+  `SKILL.md`'s "Icons" section; it silently doesn't render if the app
+  hasn't registered that name. **No `form()`/`table()` methods** —
+  field/column layout lives in the generated `.vue` pages, real files, not
+  runtime PHP config.
 
 ## Resource discovery — directory convention, not explicit registration
 
