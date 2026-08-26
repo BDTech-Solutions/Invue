@@ -7,7 +7,29 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { createInvue } from 'invue/core';
 import { Notifications } from 'invue/notifications';
-import { Check, CircleCheck, CircleX, FileText, Info, MapPin, TriangleAlert, X } from '@lucide/vue';
+import {
+    Check,
+    CircleCheck,
+    CircleX,
+    FileText,
+    Info,
+    MapPin,
+    TriangleAlert,
+    X,
+    LayoutDashboard,
+    BarChart3,
+    Users,
+    FolderKanban,
+    Settings,
+    Bell,
+    Search,
+    ChevronDown,
+    Plus,
+    Sparkles,
+    TrendingUp,
+    TrendingDown,
+    LogOut,
+} from '@lucide/vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -33,6 +55,19 @@ createInertiaApp({
             'map-pin': MapPin,
             'triangle-alert': TriangleAlert,
             x: X,
+            'layout-dashboard': LayoutDashboard,
+            'bar-chart-3': BarChart3,
+            users: Users,
+            'folder-kanban': FolderKanban,
+            settings: Settings,
+            bell: Bell,
+            search: Search,
+            'chevron-down': ChevronDown,
+            plus: Plus,
+            sparkles: Sparkles,
+            'trending-up': TrendingUp,
+            'trending-down': TrendingDown,
+            'log-out': LogOut,
         });
 
         // Mounted once, app-wide (not just inside invue/panels pages) —

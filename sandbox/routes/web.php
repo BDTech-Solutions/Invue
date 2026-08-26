@@ -38,6 +38,14 @@ Route::get('/invue-tables-demo', InvueTablesDemoController::class)->name('invue.
 Route::get('/invue-notifications-demo', [InvueNotificationsDemoController::class, 'show'])->name('invue.notifications.demo');
 Route::post('/invue-notifications-demo', [InvueNotificationsDemoController::class, 'send'])->name('invue.notifications.demo.send');
 
+Route::get('/invue-panels-demo', function () {
+    return Inertia::render('InvuePanelsDemo');
+})->name('invue.panels.demo');
+
+Route::get('/invue-panels-showcase', function () {
+    return Inertia::render('InvuePanelsShowcase');
+})->name('invue.panels.showcase');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

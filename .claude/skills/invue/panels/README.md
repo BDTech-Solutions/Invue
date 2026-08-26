@@ -64,6 +64,52 @@ Verified end-to-end in `sandbox/`: registering a throwaway `panels.Sidebar`
 in `app.js` replaced the rendered sidebar with zero changes to
 `packages/panels` itself.
 
+## Sidebar customization — two layers
+
+There are deliberately two different ways to customize the sidebar, and
+they solve different problems:
+
+1. **Prop/slot customization of the default `Base/Sidebar.vue`** — for a
+   consuming app (or a "store" package) that wants the built-in look with
+   different colors/width/placement, not a rewrite. No registry call
+   needed, just pass props/slots through `<PanelLayout>` → `<Sidebar>`
+   (the resolving wrapper forwards `$attrs` and every named/scoped slot
+   generically, so this works with zero changes to the wrapper).
+2. **A full `panels.Sidebar` registry swap** — for a structurally different
+   sidebar (different DOM shape, different framework for grouping/nesting,
+   a rail instead of a panel, ...). This is the "N sidebars in the store"
+   case and needs its own component from scratch, same as before.
+
+`Base/Sidebar.vue` props:
+
+| Prop | Type | Default | Purpose |
+|---|---|---|---|
+| `items` | `Array` | `null` | Overrides `page.props.invuePanel.navigation` — lets a Sidebar render (preview, test, reuse) without a real Inertia panel page behind it. Each item: `{ url, label, icon?, group? }`. |
+| `selectedColor` | `String` | `'green'` | Active nav item's background/text color — one of the shared Invue color names (`gray`/`red`/`green`/`blue`/`yellow`/`amber`/`sky`/`rose`/`purple`/`pink`, same palette `invue/notifications`' `Toast` `color` prop uses). Resolved through a static class map in the component, **not** an arbitrary CSS color — Tailwind only scans literal class strings already present in `vendor/invue/**/*.vue`, so a color name outside this list silently falls back to `green` instead of erroring. |
+| `width` | `String` | `'md'` | `'sm'` (`w-48`) / `'md'` (`w-56`) / `'lg'` (`w-64`). Same static-map reasoning as `selectedColor` — not an arbitrary Tailwind width. |
+
+`Base/Sidebar.vue` slots:
+
+| Slot | Scope | Purpose |
+|---|---|---|
+| `#header` | — | Content above the nav list (e.g. a workspace switcher). Omitted entirely (no wrapper `<div>`/border) when unused. |
+| `#footer` | — | Content below the nav list — this is where a "profile tab at the bottom" variant hangs its `<UserMenu>` without forking the component, e.g. `<Sidebar><template #footer><UserMenu /></template></Sidebar>`. Also omitted entirely when unused. |
+| `#item` | `{ item, active }` | Overrides a single row's markup (default: an icon + label `<Link>`, highlighted via `selectedColor` when `active`). Use this for badges, nested items, or any per-row markup the default can't express — still one `panels.Sidebar` registry entry away from a full rewrite if the row-level slot isn't enough. |
+
+Icons are already fully data-driven and need no prop: each `item.icon` is a
+*name* (e.g. `'file-text'`), resolved the same way as everywhere else in
+Invue — through `invue/core`'s `<Icon>` registry (see the parent
+`SKILL.md`'s "Icons" section). Nothing sidebar-specific to configure there
+beyond registering the icon once, app-wide.
+
+A genuinely different placement — say, the profile control living in the
+sidebar's `#header` instead of `#footer`, or beside the nav items instead
+of above/below them — is exactly what the two customization layers above
+are for: `#header` vs. `#footer` covers the common case with zero new
+code, and a full `panels.Sidebar` swap covers anything structurally
+different (e.g. a rail that doesn't stack header/nav/footer vertically at
+all).
+
 ## Panels vs. Resources
 
 - A **Panel** (`Panel::make('admin')->path('admin')->middleware([...])`) is
