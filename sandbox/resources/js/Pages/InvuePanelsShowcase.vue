@@ -178,15 +178,17 @@ const notifyToggles = ref({ email: true, push: false, weekly: true })
         </Sidebar>
 
         <div class="flex min-w-0 flex-1 flex-col">
-            <Topbar>
-                <div class="relative hidden w-64 sm:block">
-                    <Icon name="search" class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Buscar..."
-                        class="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pr-3 pl-9 text-sm text-gray-700 placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none"
-                    />
-                </div>
+            <Topbar badge="Admin" color="green">
+                <template #start>
+                    <div class="relative hidden w-64 sm:block">
+                        <Icon name="search" class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Buscar..."
+                            class="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pr-3 pl-9 text-sm text-gray-700 placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none"
+                        />
+                    </div>
+                </template>
 
                 <button type="button" class="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100" @click="activeView = 'notifications'">
                     <Icon name="bell" class="h-5 w-5" />

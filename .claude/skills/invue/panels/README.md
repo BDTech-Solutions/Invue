@@ -110,6 +110,23 @@ code, and a full `panels.Sidebar` swap covers anything structurally
 different (e.g. a rail that doesn't stack header/nav/footer vertically at
 all).
 
+## Topbar customization
+
+Same two-layer split as `Sidebar` above, applied to `Base/Topbar.vue`:
+
+| Prop | Type | Default | Purpose |
+|---|---|---|---|
+| `brandName` | `String` | `null` | Overrides `page.props.invuePanel.brandName` — lets a Topbar render standalone. |
+| `brandLogoUrl` | `String` | `null` | Overrides `page.props.invuePanel.brandLogoUrl`. |
+| `badge` | `String` | `null` | Small pill next to the brand name (e.g. `"Admin"`, `"Beta"`) — omitted entirely when not set. |
+| `color` | `String` | `'gray'` | Shared Invue color name (same palette as `Sidebar`'s `selectedColor`), resolved through a static class map. Tints the bottom border and, if `badge` is set, the pill. Default reproduces the original plain-gray look exactly. |
+
+| Slot | Purpose |
+|---|---|
+| `#brand` | Replaces the logo/name/badge block entirely. |
+| `#start` | New content area between the brand block and the actions slot (breadcrumbs, a page title, a search box, ...). |
+| default (unnamed) | Right-aligned actions — unchanged from before, so existing consumers (`PanelLayout`'s `<slot name="topbar" />`) don't break. |
+
 ## Panels vs. Resources
 
 - A **Panel** (`Panel::make('admin')->path('admin')->middleware([...])`) is
