@@ -1,6 +1,6 @@
 ---
 name: invue
-description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, the native-HTML5-validation-vs-novalidate gotcha, the preserveSymlinks/vendor-npm-import build gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/. invue/tables (Filament Table Builder ideas translated to Invue's no-PHP-builder/no-Livewire philosophy) has its own full design spec in tables/README.md.
+description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, the native-HTML5-validation-vs-novalidate gotcha, the preserveSymlinks/vendor-npm-import build gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/. invue/tables (Filament Table Builder ideas translated to Invue's no-PHP-builder/no-Livewire philosophy) has its own full design spec in tables/README.md. invue/panels (Filament Panel/Resource CRUD scaffolding — make:invue-panel / make:invue-resource — translated the same way, plus the registry-swappable sidebar/topbar shell) has its own design spec in panels/README.md.
 ---
 
 # Invue
@@ -283,6 +283,25 @@ deferred past the first cut, not overlooked).
 This user does not want AI-attribution trailers (`Co-Authored-By: Claude...`)
 in commits — the repo's author identity is just `daniel`. Commit normally,
 without adding that trailer, unless told otherwise.
+
+## The panels package (`invue/panels`)
+
+Filament's Panel + Resource concept (an admin area hosting per-model
+CRUD screens), translated the same way tables and forms were: Filament is
+the feature inspiration, never the delivery mechanism. `make:invue-resource`
+doesn't build a runtime PHP `form()`/`table()` definition — it generates
+real, editable Controller/FormRequest/`.vue` files wired to `invue/tables`
+and `invue/forms`, because Invue has no PHP UI builder, on principle.
+
+The deliberate difference from Filament: the entire panel shell (sidebar,
+topbar) is swappable by a consuming app — or a future third-party "store"
+package — with one `invue.registry.register('panels.Sidebar', ...)` call,
+no vendor fork required. Read **`panels/README.md`** in full before
+touching `packages/panels/` — it covers the `Panel`/`PanelProvider`/
+`PanelManager`/`Resource` split, the directory-convention resource
+discovery (no explicit route registration needed), and exactly how
+`make:invue-resource` infers fields from an already-migrated table's real
+columns via `Schema::getColumns()`.
 
 ## Per-component docs
 
