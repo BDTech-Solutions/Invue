@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\InvueTablesDemoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Requests\InvueDemoRequest;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -18,7 +20,7 @@ Route::get('/invue-demo', function () {
     return Inertia::render('InvueDemo');
 })->name('invue.demo');
 
-Route::post('/invue-demo', function (App\Http\Requests\InvueDemoRequest $request) {
+Route::post('/invue-demo', function (InvueDemoRequest $request) {
     $status = 'Formulario enviado com sucesso.';
 
     if ($request->hasFile('avatar')) {
@@ -29,6 +31,8 @@ Route::post('/invue-demo', function (App\Http\Requests\InvueDemoRequest $request
 
     return back()->with('status', $status);
 })->name('invue.demo.store');
+
+Route::get('/invue-tables-demo', InvueTablesDemoController::class)->name('invue.tables.demo');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

@@ -1,6 +1,6 @@
 ---
 name: invue
-description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, the native-HTML5-validation-vs-novalidate gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/.
+description: Context and conventions for the Invue framework monorepo (bdtech-solutions/invue) — a Filament alternative for Laravel built on Inertia.js + Vue 3 + Tailwind instead of the TALL stack. Load this before adding/editing anything under packages/, sandbox/, or the root composer.json/package.json — it covers the monorepo layout, the vendor/-resolution distribution model, the component registry pattern, the useInvueField gotcha, the Tailwind content-scanning gotcha, the native-HTML5-validation-vs-novalidate gotcha, the preserveSymlinks/vendor-npm-import build gotcha, and how to test changes in the sandbox app. Per-component API docs live in forms/<ComponentName>/. invue/tables (Filament Table Builder ideas translated to Invue's no-PHP-builder/no-Livewire philosophy) has its own full design spec in tables/README.md.
 ---
 
 # Invue
@@ -18,6 +18,7 @@ composer.json / package.json   root: path-repo + npm workspace glue for packages
 packages/
   core/           invue/core     — shared runtime: component registry + Vue plugin
   forms/          invue/forms    — form field components (TextInput, ...)
+  tables/         invue/tables   — data tables (see tables/README.md for the full design/prop reference)
   vite-plugin/    @invue/vite-plugin — resolves `invue/{pkg}` imports from vendor/
 sandbox/          throwaway Laravel 13 + Breeze (Inertia+Vue+Tailwind) app used
                   to manually/browser-test the packages end-to-end. Not shipped.
@@ -67,6 +68,38 @@ export default {
 Skipping this doesn't error — it silently purges every Tailwind class used
 inside any `invue/*` component. If a component's styling looks unstyled or
 wrong in a consuming app, check this first.
+
+## Known gotcha: `vendor/` symlinks break `vite build` for any package that imports a real npm dependency
+
+`vite`/`npm run dev` and `npm run build` resolve bare imports differently
+for files reached through `vendor/invue/*`, which Composer installs as
+**symlinks** to `packages/*`. Dev mode tolerates it; Rolldown's production
+build follows the symlink to its real path first, then resolves further
+bare imports by walking up `node_modules` from *that* real location — which
+is outside the consuming app entirely, so it never finds a dependency that
+only exists in the app's own `node_modules`.
+
+This didn't matter for `invue/forms` (every component only imports `vue` —
+aliased to a single instance regardless of resolving path, a `vue`-specific
+exemption — and sibling `invue/*` packages via `@invue/vite-plugin`). It
+first hit `invue/tables`, whose `useInvueTable` composable imports
+`router`/`usePage` from `@inertiajs/vue3` directly: `npm run build` failed
+with `Rolldown failed to resolve import "@inertiajs/vue3"` even though
+`npm run dev` worked fine. Fix, required in the consuming app's
+`vite.config.js` the moment any `invue/*` package imports a real npm
+dependency beyond `vue`:
+
+```js
+export default defineConfig({
+    resolve: { preserveSymlinks: true },
+    // ...plugins
+});
+```
+
+Full writeup, including why `vue` itself doesn't need this: `tables/README.md`'s
+"Build gotcha" section. Document this alongside the `tailwind.content.js`
+step in any app's Getting Started — same "one-line opt-in every consumer
+needs" shape.
 
 ## Known gotcha: native HTML5 validation silently fights server-side validation
 
@@ -222,6 +255,29 @@ After a manual test session, kill both dev servers by port
 and `rm -rf sandbox/node_modules/.vite` if you changed `tailwind.config.js`
 or `vite.config.js` and see stale output.
 
+## The tables package (`invue/tables`)
+
+Same translation exercise as forms: Filament's Table Builder
+(`TextColumn::make('name')->searchable()->sortable()->badge()` on a
+Livewire component, every interaction re-running the query server-side) is
+the *feature inspiration*, never the delivery mechanism. Invue's version
+keeps the one-word-toggle ergonomics (`searchable`, `sortable`, `badge` as
+plain booleans) but as **props on `<Column>` children of a `<Table>`
+component**, and keeps Filament's *always-refetch-from-the-server* model
+but via **Inertia partial reloads** (`router.reload({ only: [...] })`)
+instead of Livewire — never client-side-only filtering of an
+already-fetched page of rows, that silently breaks past page one.
+
+Read **`tables/README.md`** in full before writing anything under
+`packages/tables/` — it has the full column/filter prop catalog translated
+from Filament, the `useInvueTable` composable contract (the tables
+equivalent of `useInvueField`, with its own destructuring-style gotcha to
+avoid), the `TableQuery` backend helper (a query-shaping helper, not a UI
+builder — same boundary as `FormRequest` validation being separate from a
+field's Vue props), and an explicit v1-scope list (row/bulk actions,
+grouping, reordering, and summaries are real Filament features intentionally
+deferred past the first cut, not overlooked).
+
 ## Git commits in this repo
 
 This user does not want AI-attribution trailers (`Co-Authored-By: Claude...`)
@@ -233,4 +289,7 @@ without adding that trailer, unless told otherwise.
 `forms/<ComponentName>/` holds the API reference for each shipped form
 field (props, slots, registry key, usage examples). Check there before
 assuming a component's prop surface — don't guess from the source alone if
-a doc exists.
+a doc exists. `tables/README.md` is the equivalent design/API reference doc
+for `invue/tables`; per-component `tables/<ComponentName>/` docs (mirroring
+`forms/<ComponentName>/` today) are the next step once the doc site catches
+up.

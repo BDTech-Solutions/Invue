@@ -6,7 +6,8 @@
     "require": {
         "php": "^8.2",
         "invue/core": "@dev",
-        "invue/forms": "@dev"
+        "invue/forms": "@dev",
+        "invue/tables": "@dev"
     },
     "require-dev": {
         "orchestra/testbench": "^10.0|^11.0",

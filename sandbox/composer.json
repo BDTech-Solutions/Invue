@@ -10,6 +10,7 @@
         "inertiajs/inertia-laravel": "^2.0",
         "invue/core": "@dev",
         "invue/forms": "@dev",
+        "invue/tables": "@dev",
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
