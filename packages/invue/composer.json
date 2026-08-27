@@ -1,0 +1,18 @@
+{
+    "name": "invue/invue",
+    "description": "The full Invue framework in one install — requires every invue/* package (core, actions, forms, tables, infolists, notifications, panels). Same role as filament/filament: most apps building a real panel/resource CRUD want everything, not one piece at a time.",
+    "keywords": ["laravel", "inertia", "vue", "invue"],
+    "license": "MIT",
+    "type": "metapackage",
+    "require": {
+        "invue/core": "self.version",
+        "invue/actions": "self.version",
+        "invue/forms": "self.version",
+        "invue/tables": "self.version",
+        "invue/infolists": "self.version",
+        "invue/notifications": "self.version",
+        "invue/panels": "self.version"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
