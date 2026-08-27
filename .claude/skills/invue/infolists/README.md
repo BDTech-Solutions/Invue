@@ -122,7 +122,7 @@ correctly lists View alongside Edit/Delete, navigation both ways, zero
 console errors, production `vite build` passes.
 
 **Gotcha hit while wiring this up, not a bug in the package itself:**
-`@invue/vite-plugin` discovers `vendor/invue/*` packages once, at Vite
+`@invue-domain/vite-plugin` discovers `vendor/invue/*` packages once, at Vite
 dev-server startup (see its own `configResolved` hook) — running
 `composer update` to add a brand-new `invue/*` package while `npm run
 dev` is already running leaves that already-running Vite process unable

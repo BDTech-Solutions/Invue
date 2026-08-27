@@ -57,7 +57,7 @@ packages/tables/
 ```
 
 Same distribution model as every other package: no npm publish, no
-`vendor:publish`, `@invue/vite-plugin` resolves `invue/tables` straight from
+`vendor:publish`, `@invue-domain/vite-plugin` resolves `invue/tables` straight from
 `vendor/invue/tables/resources/js` at build time. Same Base + resolving
 wrapper shape as `invue/forms` for every single component listed above —
 copy that shape exactly, don't skip the wrapper (see the parent skill's
@@ -514,7 +514,7 @@ own registry keys (`actions.ActionButton`, `actions.ActionGroup`,
 It's the **only** file in any `invue/*` package that imports a real npm
 dependency other than `vue` itself — every `invue/forms` component only
 imports `vue` and sibling `invue/*` packages (resolved by
-`@invue/vite-plugin`), never a third npm package directly, so this class of
+`@invue-domain/vite-plugin`), never a third npm package directly, so this class of
 bug never showed up before tables.
 
 This works fine under `vite`/`npm run dev` but **breaks `npm run build`**
@@ -552,7 +552,7 @@ This stops Vite from realpath-ing through the `vendor/invue/*` symlinks
 before resolving further bare imports, so resolution walks up from the
 symlink's *apparent* location (inside the consuming app) instead of its
 real one. Document this in the app's Getting Started right next to the
-`@invue/vite-plugin` + `tailwind.content.js` wiring steps — it's the same
+`@invue-domain/vite-plugin` + `tailwind.content.js` wiring steps — it's the same
 "one-line opt-in every consumer needs" shape as those two.
 
 **Rule for future package authors:** the moment any `invue/*` package

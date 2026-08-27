@@ -177,7 +177,7 @@ deliberate; the name isn't `Notification` because that would shadow the
 browser's own `Notification` API in any file that imports it.
 
 **How the two entry points share one render pipeline:** `store.js` is a
-module-level singleton (`@invue/vite-plugin` resolves `invue/notifications`
+module-level singleton (`@invue-domain/vite-plugin` resolves `invue/notifications`
 to one canonical module per app, so every import shares the same reactive
 `items`/timers). `useInvueNotifications` — used internally by
 `<Notifications />` — now just watches the Inertia `notifications` prop and

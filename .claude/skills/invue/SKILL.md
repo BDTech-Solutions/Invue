@@ -19,7 +19,7 @@ packages/
   core/           invue/core     — shared runtime: component registry + Vue plugin
   forms/          invue/forms    — form field components (TextInput, ...)
   tables/         invue/tables   — data tables (see tables/README.md for the full design/prop reference)
-  vite-plugin/    @invue/vite-plugin — resolves `invue/{pkg}` imports from vendor/
+  vite-plugin/    @invue-domain/vite-plugin — resolves `invue/{pkg}` imports from vendor/
 sandbox/          throwaway Laravel 13 + Breeze (Inertia+Vue+Tailwind) app used
                   to manually/browser-test the packages end-to-end. Not shipped.
 ```
@@ -38,14 +38,14 @@ lockstep); the root/sandbox composer.json path-repos them in via `@dev`.
 
 Vue components are **not** published to npm and **not** copied via
 `vendor:publish`. A Composer package ships its raw `.vue`/`.js` source in
-`resources/js/`, and `@invue/vite-plugin` resolves the bare specifier
+`resources/js/`, and `@invue-domain/vite-plugin` resolves the bare specifier
 `invue/{package}` (and subpaths) straight from `vendor/invue/{package}/resources/js`
 at build time — no publish step, edits to the package are picked up
 immediately by anything requiring it via a path repo.
 
 - `import { createInvue } from 'invue/core'` → `vendor/invue/core/resources/js/index.js`
 - `import { TextInput } from 'invue/forms'` → `vendor/invue/forms/resources/js/index.js`
-- A consuming app's `vite.config.js` must include the `invue()` plugin from `@invue/vite-plugin`.
+- A consuming app's `vite.config.js` must include the `invue()` plugin from `@invue-domain/vite-plugin`.
 - This only works through the plugin. Plain relative imports within the same
   package (e.g. `./Base/TextInput.vue`) are normal Vite resolution and need
   nothing special.
@@ -81,7 +81,7 @@ only exists in the app's own `node_modules`.
 
 This didn't matter for `invue/forms` (every component only imports `vue` —
 aliased to a single instance regardless of resolving path, a `vue`-specific
-exemption — and sibling `invue/*` packages via `@invue/vite-plugin`). It
+exemption — and sibling `invue/*` packages via `@invue-domain/vite-plugin`). It
 first hit `invue/tables`, whose `useInvueTable` composable imports
 `router`/`usePage` from `@inertiajs/vue3` directly: `npm run build` failed
 with `Rolldown failed to resolve import "@inertiajs/vue3"` even though
@@ -255,7 +255,7 @@ const { modelValue: name, error: nameError } = useInvueField(form, 'name');
 
 `sandbox/` is a real Laravel 13 + Breeze (Vue stack) app wired to the
 monorepo packages via Composer path repositories and a local `file:`
-install of `@invue/vite-plugin`. It exists specifically so changes to
+install of `@invue-domain/vite-plugin`. It exists specifically so changes to
 `packages/*` can be verified end-to-end instead of trusted on faith. Login:
 `test@example.com` / `password` (seed with `php artisan db:seed` if the
 sqlite db is empty — `create-project` runs migrations but not seeders).

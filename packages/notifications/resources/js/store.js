@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 
-// A module-level singleton — @invue/vite-plugin resolves 'invue/notifications'
+// A module-level singleton — @invue-domain/vite-plugin resolves 'invue/notifications'
 // to one canonical module per app, so every import of this file (whether
 // from useInvueNotifications' Inertia-prop watcher or from Notify.send())
 // shares the exact same `items`/timers. This is what lets a server-sent

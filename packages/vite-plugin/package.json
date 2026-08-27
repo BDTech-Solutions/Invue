@@ -1,9 +1,9 @@
 {
-    "name": "@invue/vite-plugin",
-    "version": "0.1.0",
-    "description": "Vite plugin that resolves invue/{package} imports straight from a Laravel app's vendor/ directory, no npm publish required.",
+    "name": "@invue-domain/vite-plugin",
+    "version": "1.0.0",
+    "description": "Vite plugin that resolves invue/{package} imports straight from a Laravel app's vendor/ directory.",
     "type": "module",
-    "private": true,
+    "license": "MIT",
     "main": "src/index.js",
     "exports": {
         ".": "./src/index.js"
