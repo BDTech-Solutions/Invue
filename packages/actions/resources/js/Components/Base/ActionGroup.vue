@@ -38,29 +38,101 @@ const props = defineProps({
 
 const { confirming, processing, run, confirm, cancel } = useInvueAction()
 
-const detailsEl = ref(null)
+const open = ref(false)
+const triggerEl = ref(null)
+const menuEl = ref(null)
+const menuStyle = ref({})
 
 const visibleActions = () => props.actions.filter((action) => action.visible !== false)
 
-function selectAction(action) {
-    if (detailsEl.value) {
-        detailsEl.value.open = false
+// This menu is <Teleport>-ed to <body> on purpose — an ActionGroup mounts
+// most often inside an ActionsColumn cell, and a table wraps its rows in
+// an `overflow-x-auto` container. Per the CSS spec, setting only
+// `overflow-x` implicitly turns `overflow-y` into `auto` too, so an
+// absolutely-positioned menu confined to that container gets clipped
+// vertically the moment its row is anywhere but the very top — teleporting
+// it to <body> and positioning it in viewport coordinates sidesteps that
+// entirely, rather than fighting the table's own scroll container.
+function updatePosition() {
+    if (!triggerEl.value) {
+        return
     }
 
+    const rect = triggerEl.value.getBoundingClientRect()
+
+    menuStyle.value = {
+        position: 'fixed',
+        top: `${rect.bottom + 4}px`,
+        right: `${window.innerWidth - rect.right}px`,
+    }
+}
+
+function handleOutsideClick(event) {
+    if (triggerEl.value?.contains(event.target) || menuEl.value?.contains(event.target)) {
+        return
+    }
+
+    close()
+}
+
+function handleKeydown(event) {
+    if (event.key === 'Escape') {
+        close()
+    }
+}
+
+function openMenu() {
+    updatePosition()
+    open.value = true
+
+    // Capture phase: a scroll inside the table's own container doesn't
+    // bubble to window, but is still observable during capture.
+    window.addEventListener('scroll', updatePosition, true)
+    window.addEventListener('resize', updatePosition)
+    document.addEventListener('mousedown', handleOutsideClick)
+    document.addEventListener('keydown', handleKeydown)
+}
+
+function close() {
+    open.value = false
+    window.removeEventListener('scroll', updatePosition, true)
+    window.removeEventListener('resize', updatePosition)
+    document.removeEventListener('mousedown', handleOutsideClick)
+    document.removeEventListener('keydown', handleKeydown)
+}
+
+function toggle() {
+    if (open.value) {
+        close()
+    } else {
+        openMenu()
+    }
+}
+
+function selectAction(action) {
+    close()
     run(action)
 }
 </script>
 
 <template>
-    <details ref="detailsEl" class="relative inline-block text-left">
-        <summary
-            class="flex h-7 w-7 cursor-pointer list-none items-center justify-center rounded-md text-gray-400 select-none hover:bg-gray-100 hover:text-gray-600"
-            :aria-label="triggerLabel"
-        >
-            ⋯
-        </summary>
+    <button
+        ref="triggerEl"
+        type="button"
+        class="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 select-none hover:bg-gray-100 hover:text-gray-600"
+        :aria-label="triggerLabel"
+        @click="toggle"
+    >
+        ⋯
+    </button>
 
-        <div class="absolute right-0 z-10 mt-1 w-44 overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+    <Teleport to="body">
+        <div
+            v-if="open"
+            ref="menuEl"
+            class="z-50 w-44 overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
+            :style="menuStyle"
+        >
             <button
                 v-for="(action, index) in visibleActions()"
                 :key="action.label ?? index"
@@ -74,7 +146,7 @@ function selectAction(action) {
                 <span>{{ action.label }}</span>
             </button>
         </div>
-    </details>
+    </Teleport>
 
     <ConfirmationModal
         :open="confirming !== null"
