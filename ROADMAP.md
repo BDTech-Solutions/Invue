@@ -4,15 +4,17 @@ Levantamento do que falta pro Invue cobrir o mesmo terreno que o Filament
 cobre hoje. Não é uma lista de "features bacana de ter" — é organizada por
 quanto cada peça destrava (ou bloqueia) as outras.
 
-**Status (2026-08-27):** todo o Tier 0 (#1, #2, #3) e três itens do Tier 1
-que dependiam dele — #8 (ações de tables), #4 (Relation Managers) e #5
-(notificações persistidas) — estão implementados, testados via Playwright
-no `sandbox/` (`/admin/posts`, o CRUD gerado por `make:invue-resource`,
-agora com uma aba de Comments editável inline e um sininho de
-notificações persistidas no Topbar) e documentados nos READMEs de
-`invue/actions`, `invue/tables`, `invue/panels` e `invue/notifications`.
-#6–#7 e os Tiers 2–3 continuam como descritos abaixo — não foram tocados
-ainda.
+**Status (2026-08-27):** o Tier 1 inteiro está feito — #1–#3 (Tier 0),
+#4 (Relation Managers), #5 (notificações persistidas), #6 (Infolists) e
+#8 (ações de tables), todos implementados, testados via Playwright no
+`sandbox/` (`/admin/posts`, o CRUD gerado por `make:invue-resource`,
+agora com uma aba de Comments editável inline, um sininho de
+notificações persistidas no Topbar, e uma página só-leitura em
+`/admin/posts/{post}`) e documentados nos READMEs de `invue/actions`,
+`invue/tables`, `invue/panels`, `invue/notifications` e
+`invue/infolists`. Só falta #7 (Widgets/Dashboard, prioridade menor) pra
+fechar o Tier 1 inteiro. Os Tiers 2–3 continuam como descritos abaixo —
+não foram tocados ainda.
 
 ## Onde o Invue já está sólido
 
@@ -134,7 +136,16 @@ tabela `notifications`, endpoint de fetch/mark-as-read, sininho com
 contador de não lidas no Topbar. Layout natural: reaproveita o Topbar já
 customizável (um slot novo ou um registry key `notifications.Bell`).
 
-### 6. Infolists
+### 6. Infolists — ✅ feito (2026-08-27)
+A decisão de arquitetura resolveu sozinha assim que foi olhada de perto:
+nem pacote novo duplicando formatação, nem modo `readonly` em `forms` —
+`invue/tables`' `TextColumn`/`IconColumn`/etc já são componentes
+standalone (`row`+`field`, sem nada table-específico), então
+`invue/infolists` novo é só chrome (`Infolist` grid, `Entry` label/valor,
+`Section` card) por cima deles. Provado em `/admin/posts/{post}` (nova
+página `Show.vue`, ação "View" na `ActionsColumn`, rota `show` escrita na
+mão — ver README de `invue/infolists`).
+
 Páginas só-leitura (visualizar um registro sem abrir formulário editável)
 — hoje o Invue só tem `forms` (editável) e `tables` (lista). Um recurso
 de "visualizar" força reusar `TextInput`/`Select` num modo read-only, o
@@ -239,9 +250,16 @@ uso real pra validar o design primeiro.
 dependência entre eles). Reaproveitou o Topbar já customizável (slot
 `#topbar`) sem precisar mudar `panels` — só `notifications` cresceu.
 
-**Próximo:** #6 (Infolists) é o único item de Tier 1 que sobrou de
-prioridade alta; #7 (Widgets/Dashboard) continua de prioridade menor, não
-bloqueia nada. Tier 2 (completude de feature) e Tier 3 (ecossistema)
-continuam atrás disso — é o que faz alguém decidir usar o Invue pra um
-projeto real em vez de só
-pra uma demo bonita.
+**#6 também feito** — e resolveu de vez a dúvida arquitetural que o item
+original deixava em aberto: `invue/tables`' colunas já eram componentes
+`row`+`field` standalone, então "Infolists" não precisava de nenhuma
+lógica de formatação nova, só do chrome (grid/label/card) por cima. É o
+mesmo padrão de #4/#8 se repetindo: quanto mais peças pequenas e
+genéricas já existem (`actions`, `tables`' colunas), mais barato fica
+cada feature nova — ela vira composição, não implementação do zero.
+
+**Próximo:** só sobrou #7 (Widgets/Dashboard) pra fechar o Tier 1
+inteiro — prioridade menor, não bloqueia nada. Tier 2 (completude de
+feature) e Tier 3 (ecossistema) continuam atrás disso — é o que faz
+alguém decidir usar o Invue pra um projeto real em vez de só pra uma
+demo bonita.

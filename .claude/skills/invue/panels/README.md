@@ -328,7 +328,10 @@ manager on `Posts/Edit.vue` (see "Relation managers" above) — add via an
 inline form, delete via `ActionsColumn` with confirmation, count badge
 updating live, zero console errors, hand-written `Comment` model/migration
 + two routes (not generated — see the note on nested-resource scaffolding
-above).
+above). And once more with a `Posts/Show.vue` `invue/infolists` page — a
+"View" row action added to `Posts/Index.vue`, a hand-wired `show` route
+(the generic `Route::resource()` set still excludes it), zero console
+errors. See `invue/infolists`' own README for the package itself.
 
 ## V1 scope — what this deliberately doesn't attempt yet
 
@@ -337,9 +340,12 @@ Same "ship the common 80%, leave an explicit gap" posture as
 
 **Not in v1** — real follow-ups, not oversights: relation fields (`*_id`
 columns, belongsTo/hasMany pickers), password/auth fields (hashing needs
-controller wiring, not just a form field), a `show`/view page (routes are
-registered `->except('show')`), soft-delete-aware `destroy`, and a
-`make:invue-panel`/`make:invue-resource` "undo" (regenerating with
+controller wiring, not just a form field), soft-delete-aware `destroy`,
+and a `make:invue-panel`/`make:invue-resource` "undo" (regenerating with
 `--force` overwrites; there's no scaffolding removal command). Row/bulk
 actions and navigation grouping/badges shipped 2026-08-27 — see
-"Navigation grouping and badges" above and `invue/tables`' README.
+"Navigation grouping and badges" above and `invue/tables`' README. A
+`show`/view page is also possible now (`invue/infolists`, hand-wired
+route — see that package's README), but `Route::resource(...)` here
+still registers `->except('show')`; `make:invue-resource` doesn't
+generate a `Show.vue`/`show()` yet.

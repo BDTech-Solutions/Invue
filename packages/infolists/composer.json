@@ -1,0 +1,34 @@
+{
+    "name": "invue/infolists",
+    "description": "Read-only record display for the Invue framework — Infolist/Entry/Section layout components that reuse invue/tables' column components (TextColumn, IconColumn, ...) to render a single record's fields instead of a row.",
+    "keywords": ["laravel", "inertia", "vue", "infolists", "invue"],
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^2.0|^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Invue\\Infolists\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Invue\\Infolists\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Invue\\Infolists\\InfolistsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
