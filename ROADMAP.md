@@ -4,13 +4,15 @@ Levantamento do que falta pro Invue cobrir o mesmo terreno que o Filament
 cobre hoje. Não é uma lista de "features bacana de ter" — é organizada por
 quanto cada peça destrava (ou bloqueia) as outras.
 
-**Status (2026-08-27):** todo o Tier 0 (#1, #2, #3) e dois itens do Tier 1
-que dependiam dele — #8 (ações de tables) e #4 (Relation Managers) — estão
-implementados, testados via Playwright no `sandbox/` (`/admin/posts`, o
-CRUD gerado por `make:invue-resource`, agora com uma aba de Comments
-editável inline) e documentados nos READMEs de `invue/actions`,
-`invue/tables` e `invue/panels`. #5–#7 e os Tiers 2–3 continuam como
-descritos abaixo — não foram tocados ainda.
+**Status (2026-08-27):** todo o Tier 0 (#1, #2, #3) e três itens do Tier 1
+que dependiam dele — #8 (ações de tables), #4 (Relation Managers) e #5
+(notificações persistidas) — estão implementados, testados via Playwright
+no `sandbox/` (`/admin/posts`, o CRUD gerado por `make:invue-resource`,
+agora com uma aba de Comments editável inline e um sininho de
+notificações persistidas no Topbar) e documentados nos READMEs de
+`invue/actions`, `invue/tables`, `invue/panels` e `invue/notifications`.
+#6–#7 e os Tiers 2–3 continuam como descritos abaixo — não foram tocados
+ainda.
 
 ## Onde o Invue já está sólido
 
@@ -113,7 +115,19 @@ mesmo. Depende de #1 (as ações attach/detach/edit dentro da relation
 manager são Actions) e se apoia em `invue/tables` já existente pra
 renderizar a mini-tabela.
 
-### 5. Notificações persistidas
+### 5. Notificações persistidas — ✅ feito (2026-08-27)
+`Notification::sendToDatabase($notifiable)` (tabela própria
+`invue_notifications`, migration embutida no pacote, roda sozinha com
+`php artisan migrate`), trait `HasInvueNotifications` pro model que
+recebe, `Notification::databaseFor()` pra compartilhar via Inertia (mesmo
+padrão do `flashed()`), e um `Bell` (registry key `notifications.Bell`)
+— sino + contador + dropdown + marcar como lida, montado no slot
+`#topbar` do `PanelLayout` já existente (nenhuma mudança em `panels`).
+Rotas de marcar-como-lida escritas na mão, mesma postura de bulk
+actions/relation managers. Achado e corrigido 1 bug real: intersection
+type `Model&HasInvueNotifications` nunca dava match (trait não é
+interface pra fins de `instanceof`) — ver README de `invue/notifications`.
+
 Já documentado como gap deliberado no próprio README do pacote: só existe
 o toast efêmero (`->send()`, uma request). Falta o modo persistido —
 tabela `notifications`, endpoint de fetch/mark-as-read, sininho com
@@ -221,9 +235,13 @@ aninhadas escritas na mão) em vez de parar tudo pra generalizar
 `PanelManager` numa convenção de "recurso aninhado" sem um segundo caso de
 uso real pra validar o design primeiro.
 
-**Próximo:** #5 (notificações persistidas) e #6 (Infolists) não dependem
-de #4 e podem andar na ordem que fizer mais sentido no momento; #7
-(Widgets/Dashboard) continua de prioridade menor, não bloqueia nada. Tier
-2 (completude de feature) e Tier 3 (ecossistema) continuam atrás disso —
-é o que faz alguém decidir usar o Invue pra um projeto real em vez de só
+**#5 também feito** — independente de #4, exatamente como previsto (sem
+dependência entre eles). Reaproveitou o Topbar já customizável (slot
+`#topbar`) sem precisar mudar `panels` — só `notifications` cresceu.
+
+**Próximo:** #6 (Infolists) é o único item de Tier 1 que sobrou de
+prioridade alta; #7 (Widgets/Dashboard) continua de prioridade menor, não
+bloqueia nada. Tier 2 (completude de feature) e Tier 3 (ecossistema)
+continuam atrás disso — é o que faz alguém decidir usar o Invue pra um
+projeto real em vez de só
 pra uma demo bonita.

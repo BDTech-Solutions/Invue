@@ -26,12 +26,16 @@ not attempted here, same "ship the 80%, document the gap" posture as
 packages/notifications/
   composer.json                        invue/notifications, PSR-4 Invue\Notifications\
   src/
-    Notification.php                   fluent builder: title/body/icon/color/duration, ->send(), ::flashed()
-    NotificationsServiceProvider.php
+    Notification.php                   fluent builder: title/body/icon/color/duration, ->send(), ::flashed(), ->sendToDatabase(), ::databaseFor()
+    NotificationsServiceProvider.php   loads database/migrations/ automatically
+    HasInvueNotifications.php          trait for the model receiving persisted notifications (e.g. User)
+    Models/DatabaseNotification.php    the invue_notifications row
+  database/migrations/                 creates invue_notifications
   resources/js/
     Components/
       Notifications.vue -> Base/Notifications.vue   the container: mount once, reads the shared prop, owns dismiss timers
       Toast.vue -> Base/Toast.vue                    one notification card
+      Bell.vue -> Base/Bell.vue                      persisted-notification bell + dropdown — see "Persisted notifications" below
     composables/
       useInvueNotifications.js         feeds server-sent (Inertia prop) notifications into store.js
     store.js                           module-level singleton: the actual items list + dismiss timers, shared by both entry points
@@ -76,6 +80,7 @@ effects, a completely different stacking/animation model, etc.
 ```js
 invue.registry.register('notifications.Toast', MyToastStyle)         // swap just the card design
 invue.registry.register('notifications.Container', MyToastPlacement) // or replace positioning/stacking/animation wholesale
+invue.registry.register('notifications.Bell', MyBellDropdown)        // persisted notifications — see below
 ```
 
 No PHP-side styling config exists on `Notification` at all — a future
@@ -201,10 +206,84 @@ button on the same demo page — verified it fires with **zero network
 requests** and stacks correctly alongside server-sent ones in the same
 container.
 
+Persisted notifications verified 2026-08-27: `PostController::store()`
+fires a `->sendToDatabase($request->user())` alongside its existing toast,
+`Bell` mounted in `Posts/Index.vue`'s `#topbar` slot — checked with
+Playwright: unread red dot, dropdown listing, click-to-mark-one-read,
+mark-all-as-read, dot/button disappearing exactly when `unreadCount`
+reaches 0, zero console errors. Caught and fixed one real bug along the
+way: `Notification::databaseFor()`'s `$notifiable` was originally
+type-hinted `Model&HasInvueNotifications` — PHP intersection types check
+`instanceof`, which never matches a *trait* name, so every real caller
+(a `User` that legitimately `use`s the trait) threw a `TypeError` at
+runtime. Fixed by dropping to a plain `Model` hint with the trait
+requirement documented in the docblock instead — see the method's own
+comment for the full reasoning if this pattern comes up again.
+
+## Persisted notifications (2026-08-27)
+
+The gap flagged above is closed, same builder, a different destination:
+
+```php
+Notification::make()
+    ->title('New post published')
+    ->icon('file-text')
+    ->sendToDatabase($user); // any Model — doesn't need HasInvueNotifications
+```
+
+Storage is a package-owned `invue_notifications` table (separate from
+Laravel's own built-in `notifications` table on purpose — this is a
+simpler, parallel concept: title/body/icon/color, not an arbitrary `data`
+blob + notification class name). The migration ships with the package and
+runs automatically (`NotificationsServiceProvider::loadMigrationsFrom()`)
+— no publish step.
+
+**Reading them back** needs the `HasInvueNotifications` trait on the
+receiving model (your `User`, typically):
+
+```php
+use Invue\Notifications\HasInvueNotifications;
+
+class User extends Authenticatable
+{
+    use HasInvueNotifications; // -> invueNotifications() / unreadInvueNotifications()
+}
+```
+
+Then share them the same hand-wired way `flashed()` already works —
+`Notification::databaseFor($notifiable, $limit = 10)` returns
+`{ items: [...], unreadCount: N }`:
+
+```php
+'databaseNotifications' => fn () => $request->user()
+    ? Notification::databaseFor($request->user())
+    : ['items' => [], 'unreadCount' => 0],
+```
+
+**`Bell`** (registry key `notifications.Bell`) reads that shared prop and
+renders the trigger + dropdown — a bell icon, a red dot when
+`unreadCount > 0`, the list (unread ones bolded with a color dot, same
+palette as `Toast`'s `color`), and, given URLs, click-to-mark-read:
+
+```vue
+<Bell
+    :mark-as-read-url="(item) => route('notifications.read', item.id)"
+    :mark-all-as-read-url="route('notifications.read-all')"
+/>
+```
+
+Props: `prop` (String, default `'databaseNotifications'`, matches the
+shared-prop-name convention `Notifications`'s own `prop` uses),
+`markAsReadUrl` (Function, `(item) => url` — omit for a read-only bell),
+`markAllAsReadUrl` (String, optional — the header link only renders when
+both this is set and there's something unread). No mark-as-read routes
+are auto-registered — same posture as tables' bulk actions and the
+comments relation manager: the endpoint is two lines
+(`$notification->markAsRead()`), wired by hand in the consuming app.
+Typical mount point: `<PanelLayout>`'s `#topbar` slot.
+
 ## V1 scope — what this deliberately doesn't attempt yet
 
-- **No persisted/database notifications** (see above) — no `->sendToDatabase()`,
-  no bell icon, no unread count, no mark-as-read endpoint.
 - **No PHP-side `->actions([Action::make(...)])` API** (Filament's data-driven
   action buttons declared from the builder). `Base/Toast.vue`'s `#actions`
   slot (see Customization above) covers the *client-side* per-app case —

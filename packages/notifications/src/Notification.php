@@ -2,7 +2,9 @@
 
 namespace Invue\Notifications;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Invue\Notifications\Models\DatabaseNotification;
 
 /**
  * Fluent builder for one ephemeral toast, translating Filament's
@@ -12,10 +14,10 @@ use Illuminate\Support\Str;
  * is a 100% client-side registry concern (see notifications.Toast).
  *
  * ->send() flashes onto the session for exactly the next request/redirect
- * — the same one-shot model Filament's own ->send() uses. There is
- * deliberately no ->sendToDatabase()/bell-dropdown persisted mode in v1
- * (see the package README's v1-scope note) — settled explicitly with the
- * project owner in favor of shipping the toast first.
+ * — the same one-shot model Filament's own ->send() uses.
+ * ->sendToDatabase() (below) is the persisted counterpart, added
+ * 2026-08-27 — same builder, same title/body/icon/color, a different
+ * destination.
  */
 class Notification
 {
@@ -161,5 +163,51 @@ class Notification
     public static function flashed(): array
     {
         return session(static::SESSION_KEY, []);
+    }
+
+    /**
+     * Persists this notification instead of (or alongside — nothing stops
+     * calling both) flashing it. Works against any model, not just ones
+     * using HasInvueNotifications — that trait is only needed to
+     * conveniently read notifications back (databaseFor(), below).
+     */
+    public function sendToDatabase(Model $notifiable): DatabaseNotification
+    {
+        return DatabaseNotification::create([
+            'notifiable_type' => $notifiable->getMorphClass(),
+            'notifiable_id' => $notifiable->getKey(),
+            'title' => $this->title,
+            'body' => $this->body,
+            'icon' => $this->icon,
+            'color' => $this->color,
+        ]);
+    }
+
+    /**
+     * The glue for your own HandleInertiaRequests::share() — same posture
+     * as flashed(): this package doesn't auto-register a middleware,
+     * since which prop name and which notifiable ("the current user"?
+     * something else?) is an app decision.
+     *
+     * $notifiable must use the HasInvueNotifications trait — not
+     * enforceable as a real type hint (PHP intersection types require an
+     * interface, and `instanceof` never matches a trait by name; a
+     * `Model&HasInvueNotifications` hint here would reject every real
+     * caller with a TypeError even though the trait is applied — caught
+     * live, see the parent skill's Vue confirm-action memory for the
+     * sibling class of "looks right, fails at runtime" bug this session).
+     *
+     * @return array{items: list<array{id: int, title: string, body: ?string, icon: ?string, color: string, read: bool, createdAt: string}>, unreadCount: int}
+     */
+    public static function databaseFor(Model $notifiable, int $limit = 10): array
+    {
+        return [
+            'items' => $notifiable->invueNotifications()
+                ->limit($limit)
+                ->get()
+                ->map(fn (DatabaseNotification $notification) => $notification->toNotificationArray())
+                ->all(),
+            'unreadCount' => $notifiable->unreadInvueNotifications()->count(),
+        ];
     }
 }
