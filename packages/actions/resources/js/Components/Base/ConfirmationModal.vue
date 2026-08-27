@@ -49,30 +49,38 @@ defineEmits(['confirm', 'cancel'])
 </script>
 
 <template>
-    <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="$emit('cancel')">
-        <div class="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl">
-            <h2 class="text-base font-semibold text-gray-900">{{ title }}</h2>
-            <p v-if="text" class="mt-1.5 text-sm text-gray-600">{{ text }}</p>
+    <!-- Teleported to <body> so this never inherits styling from wherever
+         it was triggered — e.g. a table cell with `text-align: right`
+         (ActionsColumn's `align="end"`) would otherwise bleed into the
+         modal's own text, since `position: fixed` only changes layout,
+         not CSS inheritance. Same reasoning as ActionGroup's dropdown
+         menu. -->
+    <Teleport to="body">
+        <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="$emit('cancel')">
+            <div class="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl">
+                <h2 class="text-base font-semibold text-gray-900">{{ title }}</h2>
+                <p v-if="text" class="mt-1.5 text-sm text-gray-600">{{ text }}</p>
 
-            <div class="mt-5 flex justify-end gap-2">
-                <button
-                    type="button"
-                    class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    :disabled="processing"
-                    @click="$emit('cancel')"
-                >
-                    {{ cancelLabel }}
-                </button>
-                <button
-                    type="button"
-                    class="rounded-md px-3 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    :class="CONFIRM_BUTTON_CLASSES[color] ?? CONFIRM_BUTTON_CLASSES.gray"
-                    :disabled="processing"
-                    @click="$emit('confirm')"
-                >
-                    {{ confirmLabel }}
-                </button>
+                <div class="mt-5 flex justify-end gap-2">
+                    <button
+                        type="button"
+                        class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        :disabled="processing"
+                        @click="$emit('cancel')"
+                    >
+                        {{ cancelLabel }}
+                    </button>
+                    <button
+                        type="button"
+                        class="rounded-md px-3 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        :class="CONFIRM_BUTTON_CLASSES[color] ?? CONFIRM_BUTTON_CLASSES.gray"
+                        :disabled="processing"
+                        @click="$emit('confirm')"
+                    >
+                        {{ confirmLabel }}
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </Teleport>
 </template>
