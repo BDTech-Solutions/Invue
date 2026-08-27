@@ -45,6 +45,32 @@ wrapper** `../Toast.vue` (not `Base/Toast.vue` directly), so a registry
 swap of just `notifications.Toast` still applies inside the default
 container — the same rule `PanelLayout` follows for `Sidebar`/`Topbar`.
 
+## Customization — two layers (same as `panels.Sidebar`/`panels.Topbar`)
+
+Most store variants won't need a full registry swap — the shipped
+`Base/Notifications.vue`/`Base/Toast.vue` cover reskinning through props and
+slots, same "layer 1 vs. layer 2" split used for panels:
+
+**`Base/Toast.vue` (per-card reskin):**
+
+| Prop/slot | Purpose |
+|---|---|
+| `title`/`body`/`icon`/`color`/`iconColor` | Unchanged — the original props. |
+| `#icon` (scoped: `icon`, `color`) | Override the icon block entirely (e.g. an avatar circle instead of an `<Icon>`). Defaults to the original icon rendering. |
+| `#actions` (scoped: `dismiss`) | Room for action buttons (e.g. "Desfazer") under the title/body. Empty by default — this is what closes the "no actions in v1" gap noted below, without a registry swap. |
+
+**`Base/Notifications.vue` (container reskin):**
+
+| Prop/slot | Purpose |
+|---|---|
+| `prop` | Unchanged — the shared Inertia prop name. |
+| `position` | One of `top-right` (default) / `top-left` / `top-center` / `bottom-right` / `bottom-left` / `bottom-center`. Resolved through a static class map (Tailwind content-scanning rule — see below). Bottom positions stack in reverse so the newest toast still lands next to the anchor, matching how top positions already behaved. |
+| `#item` (scoped: `item`, `dismiss`) | Fully override one toast's markup while the container keeps owning the list/positioning/dismiss-timers. Falls back to the resolved `<Toast>`, same `#item` pattern `panels.Sidebar` uses for nav rows. |
+
+Layer 2 (`notifications.Toast`/`notifications.Container` registry swap,
+below) is still the answer for a structurally different toast — sound
+effects, a completely different stacking/animation model, etc.
+
 ## Registry keys — this is the actual point of the package
 
 ```js
@@ -155,6 +181,12 @@ into the identical store directly, client-side, with zero network request.
 Neither entry point knows the other exists; `<Notifications />` doesn't
 care which one produced an item.
 
+`/invue-notifications-toast-demo` (3 static `Toast` variants: default,
+`#icon` avatar override, `#actions` "Desfazer" button) and
+`/invue-notifications-showcase` (live `position` switcher + a fully custom
+`#item` glass-card render, driven by `Notify`) exercise the customization
+layer above — same demo/showcase split used for `panels.Sidebar`/`Topbar`.
+
 ## Verified in `sandbox/`
 
 `/invue-notifications-demo` (`InvueNotificationsDemoController`) exercises
@@ -173,8 +205,12 @@ container.
 
 - **No persisted/database notifications** (see above) — no `->sendToDatabase()`,
   no bell icon, no unread count, no mark-as-read endpoint.
-- **No actions** (Filament's `Notification::make()->actions([Action::make(...)])`
-  — buttons inside a toast). Not in v1; a real follow-up once the base
-  toast is proven, same posture as tables' deferred row actions.
+- **No PHP-side `->actions([Action::make(...)])` API** (Filament's data-driven
+  action buttons declared from the builder). `Base/Toast.vue`'s `#actions`
+  slot (see Customization above) covers the *client-side* per-app case —
+  wire a button in the page/registry-swapped component — but there's still
+  no way to declare an action from `Notification::make()` itself. A real
+  follow-up if that data-driven shape turns out to be needed, same posture
+  as tables' deferred row actions.
 - **No broadcast/real-time delivery** — `send()` is strictly "queued for the
   next request/redirect", not pushed live via Echo/Reverb.

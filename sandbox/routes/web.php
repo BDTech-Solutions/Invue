@@ -54,6 +54,14 @@ Route::get('/invue-topbar-showcase', function () {
     return Inertia::render('InvueTopbarShowcase');
 })->name('invue.topbar.showcase');
 
+Route::get('/invue-notifications-toast-demo', function () {
+    return Inertia::render('InvueNotificationsToastDemo');
+})->name('invue.notifications.toast.demo');
+
+Route::get('/invue-notifications-showcase', function () {
+    return Inertia::render('InvueNotificationsShowcase');
+})->name('invue.notifications.showcase');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

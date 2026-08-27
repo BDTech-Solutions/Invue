@@ -57,7 +57,11 @@ const props = defineProps({
     },
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
+
+function dismiss() {
+    emit('close')
+}
 </script>
 
 <template>
@@ -66,23 +70,35 @@ defineEmits(['close'])
         :class="CARD_COLOR_CLASSES[color] ?? CARD_COLOR_CLASSES.gray"
         role="alert"
     >
-        <Icon
-            v-if="icon"
-            :name="icon"
-            class="mt-0.5 h-5 w-5 shrink-0"
-            :class="ICON_COLOR_CLASSES[iconColor ?? color] ?? ICON_COLOR_CLASSES.gray"
-        />
+        <!-- Reskin layer: override the icon block entirely (e.g. an avatar
+             image instead of an <Icon>) without a registry swap. Default
+             content preserves the exact old behaviour (nothing renders
+             unless `icon` is set). -->
+        <slot name="icon" :icon="icon" :color="iconColor ?? color">
+            <Icon
+                v-if="icon"
+                :name="icon"
+                class="mt-0.5 h-5 w-5 shrink-0"
+                :class="ICON_COLOR_CLASSES[iconColor ?? color] ?? ICON_COLOR_CLASSES.gray"
+            />
+        </slot>
 
         <div class="min-w-0 flex-1">
             <p v-if="title" class="text-sm font-semibold text-gray-900">{{ title }}</p>
             <p v-if="body" class="mt-0.5 text-sm text-gray-600">{{ body }}</p>
+
+            <!-- Reskin layer: room for action buttons (e.g. "Desfazer") next
+                 to a toast's text, without needing a full registry swap.
+                 Empty by default — the README's noted v1 gap ("no actions"),
+                 now closeable per-app instead of forked. -->
+            <slot name="actions" :dismiss="dismiss" />
         </div>
 
         <button
             type="button"
             class="shrink-0 text-gray-400 hover:text-gray-600"
             aria-label="Dismiss"
-            @click="$emit('close')"
+            @click="dismiss"
         >
             ✕
         </button>
