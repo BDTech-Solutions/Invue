@@ -21,6 +21,8 @@ abstract class Resource
 
     protected static ?string $navigationGroup = null;
 
+    protected static ?string $navigationBadgeColor = 'gray';
+
     public static function getModel(): string
     {
         return static::$model;
@@ -54,6 +56,23 @@ abstract class Resource
     public static function getNavigationGroup(): ?string
     {
         return static::$navigationGroup;
+    }
+
+    /**
+     * Overridden by a generated Resource to show a count/status pill next
+     * to its nav item — null (the default) renders no badge at all. A
+     * closure/query so it stays lazy: `PanelManager::navigationFor()` only
+     * evaluates it while actually building the Sidebar's `navigation`
+     * prop, not on every request that touches this class.
+     */
+    public static function getNavigationBadge(): int|string|null
+    {
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): string
+    {
+        return static::$navigationBadgeColor ?? 'gray';
     }
 
     /**

@@ -84,7 +84,7 @@ they solve different problems:
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `items` | `Array` | `null` | Overrides `page.props.invuePanel.navigation` — lets a Sidebar render (preview, test, reuse) without a real Inertia panel page behind it. Each item: `{ url, label, icon?, group? }`. |
+| `items` | `Array` | `null` | Overrides `page.props.invuePanel.navigation` — lets a Sidebar render (preview, test, reuse) without a real Inertia panel page behind it. Each item: `{ url, label, icon?, group?, badge?, badgeColor? }`. |
 | `selectedColor` | `String` | `'green'` | Active nav item's background/text color — one of the shared Invue color names (`gray`/`red`/`green`/`blue`/`yellow`/`amber`/`sky`/`rose`/`purple`/`pink`, same palette `invue/notifications`' `Toast` `color` prop uses). Resolved through a static class map in the component, **not** an arbitrary CSS color — Tailwind only scans literal class strings already present in `vendor/invue/**/*.vue`, so a color name outside this list silently falls back to `green` instead of erroring. |
 | `width` | `String` | `'md'` | `'sm'` (`w-48`) / `'md'` (`w-56`) / `'lg'` (`w-64`). Same static-map reasoning as `selectedColor` — not an arbitrary Tailwind width. |
 
@@ -101,6 +101,32 @@ Icons are already fully data-driven and need no prop: each `item.icon` is a
 Invue — through `invue/core`'s `<Icon>` registry (see the parent
 `SKILL.md`'s "Icons" section). Nothing sidebar-specific to configure there
 beyond registering the icon once, app-wide.
+
+**Navigation grouping and badges (2026-08-27).** Items sharing the same
+`item.group` render under one collapsible-free heading, in first-seen
+order; an item with no `group` renders flat, exactly as it always did —
+existing single-group navigations are unaffected. `item.badge` renders a
+small pill at the row's trailing edge (e.g. a count), tinted via
+`item.badgeColor` (same shared palette, default `gray`). For a
+`Resource`-backed navigation this is wired PHP-side, not something you
+build by hand:
+
+```php
+class PostResource extends Resource
+{
+    protected static ?string $navigationGroup = 'Content';
+
+    public static function getNavigationBadge(): int|string|null
+    {
+        return Post::count();
+    }
+}
+```
+
+`PanelManager::navigationFor()` calls `getNavigationBadge()`/
+`getNavigationBadgeColor()` lazily while building the `navigation` prop —
+not on every request that merely loads the `Resource` class — and both
+default to `null`/`'gray'` (no badge at all) when left unset.
 
 A genuinely different placement — say, the profile control living in the
 sidebar's `#header` instead of `#footer`, or beside the nav items instead
@@ -137,7 +163,8 @@ Same two-layer split as `Sidebar` above, applied to `Base/Topbar.vue`:
   in `bootstrap/providers.php` — `make:invue-panel Admin` scaffolds this.
 - A **Resource** (`{Model}Resource extends Invue\Panels\Resource`) is
   metadata for one model inside a panel: which model, its nav label/icon/
-  group, and the (overridable) convention for finding its controller.
+  group/badge, and the (overridable) convention for finding its
+  controller.
   `$navigationIcon` is an **icon name** (e.g. `'file-text'`), resolved
   client-side through `invue/core`'s `<Icon>` registry — see the parent
   `SKILL.md`'s "Icons" section; it silently doesn't render if the app
@@ -207,6 +234,12 @@ Laravel's own generators).
 real browser (Playwright), zero console errors, zero hand-written route or
 Vue code. This is the reference to re-run if `packages/panels` changes.
 
+Extended 2026-08-27 with `invue/actions`-backed row/bulk actions (see
+`invue/tables`' README), `TableQuery::authorize()` gating which actions
+show per row, and a `Content` navigation group + live post-count badge on
+the `Posts` nav item — all re-verified end-to-end via Playwright on the
+same generated CRUD, zero console errors.
+
 ## V1 scope — what this deliberately doesn't attempt yet
 
 Same "ship the common 80%, leave an explicit gap" posture as
@@ -215,8 +248,8 @@ Same "ship the common 80%, leave an explicit gap" posture as
 **Not in v1** — real follow-ups, not oversights: relation fields (`*_id`
 columns, belongsTo/hasMany pickers), password/auth fields (hashing needs
 controller wiring, not just a form field), a `show`/view page (routes are
-registered `->except('show')`), soft-delete-aware `destroy`, bulk/row
-actions beyond the single per-row "Edit" link, multi-panel navigation
-grouping in the default `Sidebar`, and a `make:invue-panel`/
-`make:invue-resource` "undo" (regenerating with `--force` overwrites; there's
-no scaffolding removal command).
+registered `->except('show')`), soft-delete-aware `destroy`, and a
+`make:invue-panel`/`make:invue-resource` "undo" (regenerating with
+`--force` overwrites; there's no scaffolding removal command). Row/bulk
+actions and navigation grouping/badges shipped 2026-08-27 — see
+"Navigation grouping and badges" above and `invue/tables`' README.

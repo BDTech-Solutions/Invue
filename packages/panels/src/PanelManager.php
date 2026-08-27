@@ -106,7 +106,7 @@ class PanelManager
     }
 
     /**
-     * @return list<array{label: string, icon: ?string, group: ?string, url: string}>
+     * @return list<array{label: string, icon: ?string, group: ?string, url: string, badge: int|string|null, badgeColor: string}>
      */
     public function navigationFor(Panel $panel): array
     {
@@ -116,6 +116,8 @@ class PanelManager
                 'icon' => $resource::getNavigationIcon(),
                 'group' => $resource::getNavigationGroup(),
                 'url' => '/'.trim($panel->getPath(), '/').'/'.$resource::getSlug(),
+                'badge' => $resource::getNavigationBadge(),
+                'badgeColor' => $resource::getNavigationBadgeColor(),
             ],
             $this->discoverResources($panel),
         );

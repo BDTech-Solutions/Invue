@@ -1,5 +1,9 @@
 <script setup>
 import { Comment, Fragment, Text, computed, ref, useSlots } from 'vue'
+// Resolved wrapper, not Base/BulkActionsBar.vue — same composing rule
+// every parent that owns a swappable child follows (PanelLayout ->
+// Sidebar/Topbar, ActionsColumn -> ActionGroup).
+import BulkActionsBar from '../BulkActionsBar.vue'
 
 const props = defineProps({
     table: {
@@ -17,6 +21,19 @@ const props = defineProps({
     emptyMessage: {
         type: String,
         default: 'No results found.',
+    },
+    // Turns on the leading checkbox column + BulkActionsBar. Off by
+    // default so every table that doesn't need bulk actions stays exactly
+    // as it rendered before this existed.
+    selectable: {
+        type: Boolean,
+        default: false,
+    },
+    // A static array, or a function of the selected ids — see
+    // Base/BulkActionsBar.vue.
+    bulkActions: {
+        type: [Array, Function],
+        default: () => [],
     },
 })
 
@@ -184,6 +201,21 @@ const paginationSummary = computed(() => {
 
     return `Showing ${start}–${end} of ${m.total}`
 })
+
+const allRowsSelected = computed(() => rows.value.length > 0 && rows.value.every((row) => props.table.isSelected(row.id)))
+const someRowsSelected = computed(() => rows.value.some((row) => props.table.isSelected(row.id)))
+
+// Native checkboxes have no `indeterminate` attribute — it's a DOM
+// property only, so it has to be set imperatively via a directive instead
+// of a template binding.
+const vIndeterminate = {
+    mounted(el, binding) {
+        el.indeterminate = binding.value
+    },
+    updated(el, binding) {
+        el.indeterminate = binding.value
+    },
+}
 </script>
 
 <template>
@@ -228,10 +260,27 @@ const paginationSummary = computed(() => {
             </details>
         </div>
 
+        <BulkActionsBar
+            v-if="selectable"
+            :count="table.state.selected.length"
+            :actions="bulkActions"
+            :selected-ids="table.state.selected"
+            @success="table.clearSelection()"
+        />
+
         <div class="overflow-x-auto rounded-md border border-gray-200">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th v-if="selectable" scope="col" class="w-10 px-3 py-2">
+                            <input
+                                type="checkbox"
+                                class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                :checked="allRowsSelected"
+                                v-indeterminate="someRowsSelected && !allRowsSelected"
+                                @change="table.toggleSelectAll()"
+                            />
+                        </th>
                         <th
                             v-for="column in visibleColumns"
                             :key="column.field"
@@ -255,11 +304,19 @@ const paginationSummary = computed(() => {
                 </thead>
                 <tbody class="divide-y divide-gray-100 bg-white">
                     <tr v-if="rows.length === 0">
-                        <td :colspan="visibleColumns.length || 1" class="px-3 py-6 text-center text-gray-400">
+                        <td :colspan="(visibleColumns.length || 1) + (selectable ? 1 : 0)" class="px-3 py-6 text-center text-gray-400">
                             {{ emptyMessage }}
                         </td>
                     </tr>
                     <tr v-for="(row, rowIndex) in rows" :key="row.id ?? rowIndex">
+                        <td v-if="selectable" class="px-3 py-2">
+                            <input
+                                type="checkbox"
+                                class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                :checked="table.isSelected(row.id)"
+                                @change="table.toggleSelect(row.id)"
+                            />
+                        </td>
                         <td
                             v-for="column in visibleColumns"
                             :key="column.field"

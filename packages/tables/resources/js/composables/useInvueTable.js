@@ -21,9 +21,19 @@ export function useInvueTable(propName, options = {}) {
         filters: { ...(source().meta.filters ?? {}) },
         page: source().meta.current_page ?? 1,
         perPage: source().meta.per_page ?? 15,
+        // Row-selection ids for bulk actions — purely client-side (never
+        // sent to the server by reload()), so it's fine to live alongside
+        // the server-driven fields above without its own watcher wiring
+        // into them.
+        selected: [],
     })
 
     function reload() {
+        // The visible row set is about to change — a stale selection
+        // (an id no longer on screen) would silently keep "acting" on rows
+        // the user can't see anymore.
+        state.selected = []
+
         router.reload({
             only,
             preserveState: true,
@@ -72,10 +82,39 @@ export function useInvueTable(propName, options = {}) {
         }
     }
 
+    function isSelected(id) {
+        return state.selected.includes(id)
+    }
+
+    function toggleSelect(id) {
+        const index = state.selected.indexOf(id)
+
+        if (index === -1) {
+            state.selected.push(id)
+        } else {
+            state.selected.splice(index, 1)
+        }
+    }
+
+    function toggleSelectAll() {
+        const ids = source().data.map((row) => row.id)
+        const allSelected = ids.length > 0 && ids.every((id) => state.selected.includes(id))
+
+        state.selected = allSelected ? [] : [...ids]
+    }
+
+    function clearSelection() {
+        state.selected = []
+    }
+
     return {
         rows: computed(() => source().data),
         meta: computed(() => source().meta),
         state,
         toggleSort,
+        isSelected,
+        toggleSelect,
+        toggleSelectAll,
+        clearSelection,
     }
 }

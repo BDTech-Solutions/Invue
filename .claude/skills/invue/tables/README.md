@@ -43,12 +43,14 @@ packages/tables/
         CheckboxColumn.vue + Base/CheckboxColumn.vue
         ToggleColumn.vue + Base/ToggleColumn.vue
         SelectColumn.vue + Base/SelectColumn.vue
+        ActionsColumn.vue + Base/ActionsColumn.vue   row actions — see below
       Filters/
         SelectFilter.vue + Base/SelectFilter.vue
         TernaryFilter.vue + Base/TernaryFilter.vue
         (no dedicated "Filter" component — a custom filter is just
          invue/forms fields composed directly in #filters, see "Filters"
          below; there's no `tables.Filter` registry key for this reason)
+      BulkActionsBar.vue + Base/BulkActionsBar.vue   selection + bulk actions — see below
     composables/
       useInvueTable.js                   the composable that does the work
     index.js
@@ -331,6 +333,87 @@ app registered them via `invue.registerIcons({...})`.
 | `options` | `->options()` — array or `{value, label}[]`, same shape as `forms/Select`. |
 | `onUpdate` | `->afterStateUpdated()` |
 
+## Row and bulk actions — built on `invue/actions` (2026-08-27)
+
+`ActionsColumn` is a column like any other — same "column is a child, not a
+config object" shape — but its content isn't a data field; it's a list of
+`invue/actions` `ActionButton`s rendered inside a dropdown
+(`invue.registry`'s `actions.ActionGroup`):
+
+```vue
+<script setup>
+function rowActions(row) {
+    return [
+        { label: 'Edit', icon: 'pencil', url: route('posts.edit', row.id) },
+        {
+            label: 'Delete', icon: 'trash', color: 'red',
+            url: route('posts.destroy', row.id), method: 'delete',
+            visible: row._can?.delete ?? true,
+            requiresConfirmation: true,
+            confirmationTitle: 'Delete this post?',
+        },
+    ]
+}
+</script>
+
+<ActionsColumn label="Actions" align="end" :actions="rowActions" />
+```
+
+`actions` is a static array, or (as above) a function of `row` — the same
+"function prop resolved against the row" convention `TextColumn`'s
+`color`/`url`/`description` already use. Each entry is a plain action
+descriptor (`label`/`icon`/`color`/`url`/`method`/`data`/`visible`/
+`requiresConfirmation`/`confirmationTitle`/`confirmationText`) — see
+`invue/actions`' own README for the full shape.
+
+**Bulk actions** are `<Table selectable :bulk-actions="...">` — `selectable`
+turns on the leading checkbox column (backed by `useInvueTable`'s
+`isSelected`/`toggleSelect`/`toggleSelectAll`/`clearSelection`, purely
+client-side, reset automatically on any reload so a stale id never lingers
+past the row it pointed to). `bulkActions` is a function of the selected
+ids, rendered in a `BulkActionsBar` that appears above the table once
+something's selected:
+
+```vue
+function bulkActions(selectedIds) {
+    return [{
+        label: 'Delete selected', icon: 'trash', color: 'red',
+        url: route('posts.destroy-many'), method: 'delete',
+        data: { ids: selectedIds },
+        requiresConfirmation: true,
+        confirmationTitle: `Delete ${selectedIds.length} post(s)?`,
+    }]
+}
+```
+
+```vue
+<Table :table="table" selectable :bulk-actions="bulkActions">
+```
+
+Bulk endpoints aren't part of `PanelManager`'s generic `Route::resource()`
+set yet — wire your own route/controller method the same way you already
+write `store()`/`update()`/`destroy()` by hand (see `ROADMAP.md` for
+whether that becomes a framework-level convention later).
+
+### `TableQuery::authorize()` — row-level permission data
+
+PHP stays the one place that knows about Policies; it never decides how an
+action *looks*, only whether one is allowed — same "data, not UI" boundary
+every Invue package keeps:
+
+```php
+TableQuery::for(Post::query())
+    ->authorize(['delete' => fn (Post $post) => ! $post->published])
+    ->paginate($request);
+```
+
+Every serialized row gets a `_can` map (`{ delete: false }` in the example
+above) alongside its normal fields. `ActionsColumn`'s `visible` field is
+exactly where a Vue-side action reacts to it (`visible: row._can?.delete`) —
+this is intentionally a convention, not magic wiring: nothing forces an
+action to check `_can`, the same way nothing forces a Filament action to
+call `->authorize()`.
+
 ## Filters
 
 `<SelectFilter>` and `<TernaryFilter>` live inside `<Table>`'s `#filters`
@@ -398,11 +481,6 @@ toggling, `useInvueTable` + `TableQuery`.
 
 **Not in v1** (all real Filament features, all legitimate follow-ups once
 the above is solid — don't build them speculatively now):
-- **Row/bulk/header actions.** Filament's Action system is a large feature
-  area on its own (confirmation modals, notifications, grouped dropdowns).
-  For v1, render your own buttons/links inside a plain `<TextColumn>` `url`
-  prop or a custom cell slot; a real `invue/actions`-style addition is a
-  separate future package, not bolted onto tables.
 - **Inline-edit persistence.** `CheckboxColumn`/`ToggleColumn`/`SelectColumn`
   expose `onUpdate` so *you* wire the save (typically one `router.patch()`
   call); Invue doesn't auto-PATCH on your behalf in v1.
@@ -416,9 +494,13 @@ the above is solid — don't build them speculatively now):
 
 `tables.Table`, `tables.TextColumn`, `tables.IconColumn`,
 `tables.ImageColumn`, `tables.ColorColumn`, `tables.CheckboxColumn`,
-`tables.ToggleColumn`, `tables.SelectColumn`, `tables.SelectFilter`,
-`tables.TernaryFilter`. (No `tables.Filter` — see the note in "Filters"
-above; a custom filter is composed inline, not a registered component.)
+`tables.ToggleColumn`, `tables.SelectColumn`, `tables.ActionsColumn`,
+`tables.BulkActionsBar`, `tables.SelectFilter`, `tables.TernaryFilter`.
+(No `tables.Filter` — see the note in "Filters" above; a custom filter is
+composed inline, not a registered component.) Also see `invue/actions`'
+own registry keys (`actions.ActionButton`, `actions.ActionGroup`,
+`actions.ConfirmationModal`) — swapping either changes how *every*
+`ActionsColumn`/`BulkActionsBar` looks, tables included.
 
 ## Build gotcha: `useInvueTable` needs `resolve.preserveSymlinks: true` in the consuming app
 

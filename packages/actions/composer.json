@@ -1,16 +1,13 @@
 {
-    "name": "invue/tables",
-    "description": "Native Vue 3 data table components for the Invue framework, wired to Eloquent via Inertia partial reloads.",
-    "keywords": ["laravel", "inertia", "vue", "tables", "invue"],
+    "name": "invue/actions",
+    "description": "The shared 'button that does something' primitive for the Invue framework — a link/button with an optional confirmation modal, plus a dropdown group, reused by invue/tables (row/bulk actions) and any other package or app that needs a confirmable action.",
+    "keywords": ["laravel", "inertia", "vue", "actions", "invue"],
     "license": "MIT",
     "type": "library",
     "require": {
         "php": "^8.2",
         "illuminate/contracts": "^12.0|^13.0",
-        "illuminate/database": "^12.0|^13.0",
-        "illuminate/http": "^12.0|^13.0",
         "illuminate/support": "^12.0|^13.0",
-        "invue/actions": "self.version",
         "invue/core": "self.version"
     },
     "require-dev": {
@@ -19,18 +16,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Invue\\Tables\\": "src/"
+            "Invue\\Actions\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Invue\\Tables\\Tests\\": "tests/"
+            "Invue\\Actions\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Invue\\Tables\\TablesServiceProvider"
+                "Invue\\Actions\\ActionsServiceProvider"
             ]
         }
     },

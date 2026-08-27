@@ -3,6 +3,7 @@
 namespace Invue\Tables;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 class TableQuery
@@ -18,6 +19,9 @@ class TableQuery
     protected string $defaultSortDirection = 'asc';
 
     protected int $defaultPerPage = 15;
+
+    /** @var array<string, \Closure(\Illuminate\Database\Eloquent\Model): bool> */
+    protected array $authorizationChecks = [];
 
     protected function __construct(protected Builder $query) {}
 
@@ -58,6 +62,22 @@ class TableQuery
     public function defaultPerPage(int $perPage): static
     {
         $this->defaultPerPage = $perPage;
+
+        return $this;
+    }
+
+    /**
+     * Annotates every serialized row with a `_can` map — the row-level
+     * permission data an `ActionsColumn`'s `visible` (or a bulk action's)
+     * reacts to. PHP stays the one place that knows about Policies/Gates;
+     * Vue only ever reads the resulting booleans, same "data, not UI"
+     * boundary every other Invue package keeps.
+     *
+     * @param  array<string, \Closure(\Illuminate\Database\Eloquent\Model): bool>  $checks
+     */
+    public function authorize(array $checks): static
+    {
+        $this->authorizationChecks = $checks;
 
         return $this;
     }
@@ -118,8 +138,15 @@ class TableQuery
 
         $paginator = $query->paginate($perPage)->withQueryString();
 
+        $data = $this->authorizationChecks === []
+            ? $paginator->items()
+            : array_map(
+                fn (Model $model) => [...$model->toArray(), '_can' => $this->resolveCan($model)],
+                $paginator->items(),
+            );
+
         return [
-            'data' => $paginator->items(),
+            'data' => $data,
             'meta' => [
                 'total' => $paginator->total(),
                 'current_page' => $paginator->currentPage(),
@@ -130,5 +157,13 @@ class TableQuery
                 'filters' => $filters,
             ],
         ];
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    protected function resolveCan(Model $model): array
+    {
+        return array_map(fn (\Closure $check) => (bool) $check($model), $this->authorizationChecks);
     }
 }
