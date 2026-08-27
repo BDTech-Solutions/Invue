@@ -1,4 +1,8 @@
 <script setup>
+import { useMountedOnClient } from '../../composables/useMountedOnClient'
+
+const isMounted = useMountedOnClient()
+
 // Static color map — same Tailwind content-scanning rule as every other
 // color prop across Invue (see invue/notifications' Toast.vue).
 const CONFIRM_BUTTON_CLASSES = {
@@ -55,7 +59,7 @@ defineEmits(['confirm', 'cancel'])
          modal's own text, since `position: fixed` only changes layout,
          not CSS inheritance. Same reasoning as ActionGroup's dropdown
          menu. -->
-    <Teleport to="body">
+    <Teleport v-if="isMounted" to="body">
         <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="$emit('cancel')">
             <div class="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl">
                 <h2 class="text-base font-semibold text-gray-900">{{ title }}</h2>

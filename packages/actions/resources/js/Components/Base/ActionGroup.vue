@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { Icon } from 'invue/core'
 import ConfirmationModal from '../ConfirmationModal.vue'
 import { useInvueAction } from '../../composables/useInvueAction'
+import { useMountedOnClient } from '../../composables/useMountedOnClient'
 
 // Static color map for menu-item text/icon tint — same shape as
 // Base/ActionButton.vue's BUTTON_CLASSES, but text-only (a dropdown row,
@@ -37,6 +38,7 @@ const props = defineProps({
 })
 
 const { confirming, processing, run, confirm, cancel } = useInvueAction()
+const isMounted = useMountedOnClient()
 
 const open = ref(false)
 const triggerEl = ref(null)
@@ -126,7 +128,7 @@ function selectAction(action) {
         ⋯
     </button>
 
-    <Teleport to="body">
+    <Teleport v-if="isMounted" to="body">
         <div
             v-if="open"
             ref="menuEl"
