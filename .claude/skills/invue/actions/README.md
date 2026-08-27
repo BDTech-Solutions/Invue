@@ -53,6 +53,7 @@ packages/actions/
       ConfirmationModal.vue -> Base/ConfirmationModal.vue
     composables/
       useInvueAction.js                shared "confirm, then run" logic
+      useMountedOnClient.js            gates each Teleport so SSR doesn't try to render it — see below
     index.js
 ```
 
@@ -92,6 +93,35 @@ and needs to remember *which one* is confirming — it stores the whole
 resolved action object in `confirming` and reads `confirming?.title`
 etc. directly off it, same reasoning, no object-identity comparison needed
 either way.
+
+## `<Teleport>` and SSR — `useMountedOnClient()`
+
+`ActionGroup`'s dropdown and `ConfirmationModal` both `<Teleport to="body">`
+(see the Sidebar/Table dropdown-clipping and text-align-inheritance notes
+in git history if the "why Teleport" reasoning matters again) — but a
+Teleport's SSR output doesn't reconcile cleanly against Inertia's SSR
+renderer. This only surfaced once an SSR-enabled consumer actually used
+these components (`Invue-Docs`, which runs Inertia SSR; `sandbox/` here
+doesn't, so this was invisible while building the package) — a real
+`Hydration completed but contains mismatches` browser warning.
+
+Both Teleports are gated behind `useMountedOnClient()` — a ref that's
+`false` during SSR and the first client hydration pass, flipping `true`
+in `onMounted()`:
+
+```js
+const isMounted = useMountedOnClient()
+```
+```vue
+<Teleport v-if="isMounted" to="body">...</Teleport>
+```
+
+Safe because the teleported content is always closed on first render
+anyway (no `open`/dropdown state survives a fresh page load) — skipping
+it server-side changes nothing visually, it just avoids asking Vue to
+match a teleport target between server and client when there's nothing
+in it yet. Any *other* Invue component that reaches for `<Teleport>` in
+the future should use this same composable rather than re-deriving it.
 
 ## Components
 
