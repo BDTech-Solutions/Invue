@@ -4,12 +4,13 @@ Levantamento do que falta pro Invue cobrir o mesmo terreno que o Filament
 cobre hoje. Não é uma lista de "features bacana de ter" — é organizada por
 quanto cada peça destrava (ou bloqueia) as outras.
 
-**Status (2026-08-27):** todo o Tier 0 (#1, #2, #3) e o item de tables do
-Tier 1 que dependia dele (#8) estão implementados, testados via Playwright
-no `sandbox/` (`/admin/posts`, o CRUD gerado por `make:invue-resource`) e
-documentados nos READMEs de `invue/actions`, `invue/tables` e
-`invue/panels`. O resto do Tier 1 (#4–#7) e os Tiers 2–3 continuam como
-descritos abaixo — não foram tocados nesta rodada.
+**Status (2026-08-27):** todo o Tier 0 (#1, #2, #3) e dois itens do Tier 1
+que dependiam dele — #8 (ações de tables) e #4 (Relation Managers) — estão
+implementados, testados via Playwright no `sandbox/` (`/admin/posts`, o
+CRUD gerado por `make:invue-resource`, agora com uma aba de Comments
+editável inline) e documentados nos READMEs de `invue/actions`,
+`invue/tables` e `invue/panels`. #5–#7 e os Tiers 2–3 continuam como
+descritos abaixo — não foram tocados ainda.
 
 ## Onde o Invue já está sólido
 
@@ -92,7 +93,19 @@ produção se já nascerem com esse hook.
 
 ## Tier 1 — Alto valor, esperado num admin real
 
-### 4. Relation Managers
+### 4. Relation Managers — ✅ feito, parcial (2026-08-27)
+`TableQuery::for()` agora aceita uma `Relation` direto (`$post->comments()`
+— já vem com seu próprio `where` de escopo), e um novo `RelationManager`
+(card chrome: título/contador/slot `#actions`) em `invue/panels` compõe
+`invue/tables` + `invue/actions` por cima disso — nada novo do zero.
+Provado ponta a ponta em `/admin/posts/{post}/edit` (uma relação
+`Comment belongsTo Post`, adicionar via form inline, deletar via
+`ActionsColumn` com confirmação). "Parcial" porque as rotas de
+create/delete da relação ainda são escritas na mão (não existe convenção
+de "recurso aninhado" no `PanelManager`/`make:invue-resource` ainda — ver
+`invue/panels`' README). Ver README de `invue/panels`, seção "Relation
+managers".
+
 Gerenciar uma relação (`hasMany`/`belongsToMany`) inline, numa aba da
 tela de edição de um recurso — sem sair da página. É o que faz o
 Filament conseguir montar "Post" com uma aba "Comentários" editável ali
@@ -201,12 +214,16 @@ junto com a abstração. #8 (ações de tables) foi o "prova real" que validou
 o design do pacote `invue/actions` contra um caso de uso de verdade
 (`/admin/posts`) em vez de ficar só na teoria.
 
-**Próximo, pela mesma lógica de dependência:** #4 (Relation Managers) é o
-próximo item de maior alavancagem — agora que `invue/actions` existe,
-attach/detach/edit dentro de uma relation manager tem uma peça pronta pra
-usar, em vez de precisar inventar isso no meio do trabalho. #5
-(notificações persistidas) e #6 (Infolists) não dependem de #4 e podem
-andar em paralelo/depois, pela ordem que fizer mais sentido no momento.
-Tier 2 (completude de feature) e Tier 3 (ecossistema) continuam atrás
-disso — é o que faz alguém decidir usar o Invue pra um projeto real em vez
-de só pra uma demo bonita.
+**#4 também feito** — mesma lógica: `invue/actions` já pronto tornou o
+delete-com-confirmação da relation manager trivial de compor, não algo pra
+inventar no meio do trabalho. Ficou "parcial" de propósito (rotas
+aninhadas escritas na mão) em vez de parar tudo pra generalizar
+`PanelManager` numa convenção de "recurso aninhado" sem um segundo caso de
+uso real pra validar o design primeiro.
+
+**Próximo:** #5 (notificações persistidas) e #6 (Infolists) não dependem
+de #4 e podem andar na ordem que fizer mais sentido no momento; #7
+(Widgets/Dashboard) continua de prioridade menor, não bloqueia nada. Tier
+2 (completude de feature) e Tier 3 (ecossistema) continuam atrás disso —
+é o que faz alguém decidir usar o Invue pra um projeto real em vez de só
+pra uma demo bonita.

@@ -94,6 +94,12 @@ public function index(Request $request)
 }
 ```
 
+`TableQuery::for()` also accepts a `Relation` (`$post->comments()`) directly
+— both implement the same `Illuminate\Contracts\Database\Eloquent\Builder`
+contract, and a relation already carries its own parent-scoping `where`.
+This is the entire backend for a relation manager's table — see
+`invue/panels`' README, "Relation managers".
+
 `paginate()` returns a plain array shape (not a raw `LengthAwarePaginator`,
 so it survives Inertia's JSON serialization predictably):
 

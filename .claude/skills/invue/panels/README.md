@@ -39,6 +39,7 @@ packages/panels/
       PanelLayout.vue -> Base/PanelLayout.vue   composes the *resolved* Sidebar + Topbar around a slot
       Sidebar.vue -> Base/Sidebar.vue           reads `invuePanel.navigation`, Inertia <Link>s, active-path highlight, per-item icon via invue/core's <Icon>
       Topbar.vue -> Base/Topbar.vue             brand name/logo + a slot for app-specific content
+      RelationManager.vue -> Base/RelationManager.vue   card chrome (title/count/#actions) around a <Table> — see "Relation managers" below
 ```
 
 Same Base + resolving-wrapper shape as every `forms`/`tables` component —
@@ -51,7 +52,8 @@ for `Repeater`/`TextInput`.
 
 ## Registry keys
 
-`panels.Layout`, `panels.Sidebar`, `panels.Topbar`. No PHP-side
+`panels.Layout`, `panels.Sidebar`, `panels.Topbar`, `panels.RelationManager`.
+No PHP-side
 sidebar/topbar configuration exists on `Panel` at all — component swapping
 is a 100% client-side concern:
 
@@ -153,6 +155,87 @@ Same two-layer split as `Sidebar` above, applied to `Base/Topbar.vue`:
 | `#start` | New content area between the brand block and the actions slot (breadcrumbs, a page title, a search box, ...). |
 | default (unnamed) | Right-aligned actions — unchanged from before, so existing consumers (`PanelLayout`'s `<slot name="topbar" />`) don't break. |
 
+## Relation managers (2026-08-27)
+
+Managing a `hasMany`/`belongsToMany` relation inline on an Edit page — the
+"Post has a Comments tab, edited without leaving the page" case — needed
+no new package and almost no new PHP: it's `invue/tables` + `invue/actions`
+composed inside a new `RelationManager` card, backed by one widened method.
+
+**PHP side — `TableQuery::for()` now accepts a `Relation` directly**, not
+just a plain `Builder` (both implement the same
+`Illuminate\Contracts\Database\Eloquent\Builder` contract):
+
+```php
+public function edit(Request $request, Post $post): Response
+{
+    return Inertia::render('Posts/Edit', [
+        'post' => $post,
+        'comments' => TableQuery::for($post->comments())
+            ->sortable(['created_at'])
+            ->defaultSort('created_at', 'desc')
+            ->paginate($request),
+    ]);
+}
+```
+
+`$post->comments()` already carries its own `where post_id = ?` — that's
+the *entire* backend. No new concept, no relation-specific query helper;
+`TableQuery` still never decides how anything renders, same "no PHP UI
+builder" boundary as always.
+
+**Vue side — compose, don't invent a table-in-a-table primitive.**
+`comments` is just another named prop, so `useInvueTable('comments')`
+works exactly like it does anywhere else — its `reload()` partial-reloads
+only that prop, scoped to the current Edit page's URL (the post id) for
+free. `RelationManager` is chrome, not a table implementation:
+
+```vue
+<script setup>
+import { Table, TextColumn, ActionsColumn, useInvueTable } from 'invue/tables'
+import { RelationManager } from 'invue/panels'
+
+const comments = useInvueTable('comments')
+</script>
+
+<RelationManager title="Comments" :count="comments.meta.value?.total ?? null">
+    <template #actions>
+        <!-- an inline add-comment mini form, or a toggle-revealed one —
+             invue/forms fields + a useForm() submit, same as any other
+             create form in Invue. RelationManager doesn't know or care
+             what creating a related record needs. -->
+    </template>
+
+    <Table :table="comments">
+        <TextColumn field="author" label="Author" />
+        <TextColumn field="body" label="Comment" />
+        <ActionsColumn label="Actions" align="end" :actions="(row) => [
+            { label: 'Delete', color: 'red', url: route('posts.comments.destroy', [post.id, row.id]), method: 'delete', requiresConfirmation: true },
+        ]" />
+    </Table>
+</RelationManager>
+```
+
+`RelationManager` props: `title` (String, required), `count` (Number,
+`null` default — the pill is omitted entirely when left unset, not forced
+to show `0`). Slots: `#actions` (top-right, next to the title — typically
+the create form/button) and the default slot (typically a `<Table>`).
+
+**Routes aren't a `PanelManager` convention yet.** A relation manager's
+mutating actions (create/delete a related record) need their own
+routes — wired by hand today, same posture as bulk actions:
+
+```php
+Route::prefix('admin/posts/{post}')->name('invue.admin.posts.comments.')->group(function () {
+    Route::post('/comments', [CommentController::class, 'store'])->name('store');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('destroy');
+});
+```
+
+Whether `make:invue-resource`/`PanelManager` should grow a first-class
+"nested resource" convention (auto-registering these, generating the
+controller) is a real follow-up, not attempted here — see `ROADMAP.md`.
+
 ## Panels vs. Resources
 
 - A **Panel** (`Panel::make('admin')->path('admin')->middleware([...])`) is
@@ -239,6 +322,13 @@ Extended 2026-08-27 with `invue/actions`-backed row/bulk actions (see
 show per row, and a `Content` navigation group + live post-count badge on
 the `Posts` nav item — all re-verified end-to-end via Playwright on the
 same generated CRUD, zero console errors.
+
+Extended again the same day with a `Comment belongsTo Post` relation
+manager on `Posts/Edit.vue` (see "Relation managers" above) — add via an
+inline form, delete via `ActionsColumn` with confirmation, count badge
+updating live, zero console errors, hand-written `Comment` model/migration
++ two routes (not generated — see the note on nested-resource scaffolding
+above).
 
 ## V1 scope — what this deliberately doesn't attempt yet
 

@@ -2,6 +2,7 @@
 
 namespace Invue\Tables;
 
+use Illuminate\Contracts\Database\Eloquent\Builder as BuilderContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -23,9 +24,18 @@ class TableQuery
     /** @var array<string, \Closure(\Illuminate\Database\Eloquent\Model): bool> */
     protected array $authorizationChecks = [];
 
-    protected function __construct(protected Builder $query) {}
+    protected function __construct(protected BuilderContract $query) {}
 
-    public static function for(Builder $query): static
+    /**
+     * Accepts a plain Eloquent `Builder` or a `Relation` (`$post->comments()`
+     * — `Relation` implements this same contract) — a `Relation` already
+     * carries its own parent-scoping `where` clause, so
+     * `TableQuery::for($post->comments())` is the entire backend for a
+     * relation manager's table. This is the "no PHP UI builder" boundary
+     * again: TableQuery still never decides how the related records
+     * render, only which ones the query returns.
+     */
+    public static function for(BuilderContract $query): static
     {
         return new static($query);
     }
