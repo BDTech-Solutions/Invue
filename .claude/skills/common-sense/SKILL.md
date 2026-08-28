@@ -109,6 +109,17 @@ similar future decision.
   explicit padding/border/sizing utility classes — never rely on
   `@tailwindcss/forms` or any other undocumented external plugin to make
   a field look finished.
+- **`invue/core`'s `Icon.vue` renders nothing for an unregistered name** —
+  by design, no icon library is bundled. Any icon name a generator emits
+  on its own (right now: `'layout-dashboard'`, from
+  `PanelManager::navigationFor()`'s synthetic Dashboard nav entry) has to
+  be registered by default too, or it silently never appears. `invue:install`
+  installs `@lucide/vue` and wires
+  `invue.registerIcons({ 'layout-dashboard': LayoutDashboard })` into the
+  generated/patched app entry for exactly this reason — if a future
+  generator starts emitting a new icon name (e.g. an action-column
+  `pencil`/`trash`), add it to that same default registration, don't leave
+  it to the user to discover the gap.
 
 ## When you catch a gap against this bar
 
