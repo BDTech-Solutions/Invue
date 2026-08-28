@@ -61,7 +61,7 @@ const normalizedOptions = computed(() =>
             :value="modelValue"
             :disabled="disabled"
             :class="[
-                'block w-full rounded-md shadow-sm sm:text-sm',
+                'block w-full rounded-md border px-3 py-1.5 shadow-sm sm:text-sm',
                 error ? 'border-red-400 focus:border-red-400' : 'border-gray-300 focus:border-green-500',
                 'focus:ring-green-500',
             ]"

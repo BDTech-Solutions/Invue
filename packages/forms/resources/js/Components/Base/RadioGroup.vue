@@ -70,7 +70,7 @@ const groupName = `invue-radio-${Math.random().toString(36).slice(2)}`
                     :checked="modelValue === option.value"
                     :disabled="disabled"
                     :class="[
-                        'shadow-sm focus:ring-green-500',
+                        'h-4 w-4 border shadow-sm focus:ring-green-500',
                         error ? 'border-red-400 text-red-500' : 'border-gray-300 text-green-600',
                     ]"
                     @change="$emit('update:modelValue', option.value)"

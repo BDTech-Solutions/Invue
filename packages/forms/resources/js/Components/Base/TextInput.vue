@@ -100,7 +100,7 @@ function onInput(event) {
                 :step="step"
                 :disabled="disabled"
                 :class="[
-                    'block w-full rounded-md shadow-sm sm:text-sm',
+                    'block w-full rounded-md border px-3 py-1.5 shadow-sm sm:text-sm',
                     error ? 'border-red-400 focus:border-red-400' : 'border-gray-300 focus:border-green-500',
                     'focus:ring-green-500',
                     { 'pl-8': prefix || $slots.prefix, 'pr-8': suffix || $slots.suffix },
