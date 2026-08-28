@@ -109,6 +109,24 @@ similar future decision.
   explicit padding/border/sizing utility classes — never rely on
   `@tailwindcss/forms` or any other undocumented external plugin to make
   a field look finished.
+- **Cross-package UI bridging goes through the registry, never a direct
+  import** — `invue/panels` can't composer-depend on `invue/notifications`
+  (same wrong-direction problem as forms), so `Topbar.vue`'s notification
+  bell isn't imported there at all: it resolves
+  `registry.resolve('panels.topbarBell', null)`, and `invue:install`'s
+  generated app entry is what calls
+  `invue.registry.register('panels.topbarBell', Bell)` — only when
+  `class_exists(NotificationsServiceProvider::class)`. The bell (like the
+  Dashboard's icon) needs its own icon registered too (`bell`), not just
+  the component. The brand (app name + logo) lives in `Sidebar`, not
+  `Topbar` — matches Filament's own layout — via `Topbar`'s `showBrand`
+  prop, which `PanelLayout` sets `false` by default; `Topbar`'s own
+  `brandName`/`badge`/`color` props stay valid for standalone use outside
+  a Sidebar. `Topbar`'s user avatar is a real `<details>` dropdown with a
+  "Log out" action (`POST` to `logoutUrl`, default `/logout`) — not just a
+  static initials badge — so `invue:install`'s generated Dashboard no
+  longer needs its own hand-rolled logout button, and neither does any
+  `make:invue-panel`-generated page, since they all compose `PanelLayout`.
 - **`invue/core`'s `Icon.vue` renders nothing for an unregistered name** —
   by design, no icon library is bundled. Any icon name a generator emits
   on its own (right now: `'layout-dashboard'`, from
