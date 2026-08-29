@@ -3,6 +3,7 @@
 namespace Invue\Panels;
 
 use Illuminate\Support\ServiceProvider;
+use Invue\Panels\Console\Commands\MakePageCommand;
 use Invue\Panels\Console\Commands\MakePanelCommand;
 use Invue\Panels\Console\Commands\MakeResourceCommand;
 
@@ -19,6 +20,7 @@ class PanelsServiceProvider extends ServiceProvider
             $this->commands([
                 MakePanelCommand::class,
                 MakeResourceCommand::class,
+                MakePageCommand::class,
             ]);
         }
     }

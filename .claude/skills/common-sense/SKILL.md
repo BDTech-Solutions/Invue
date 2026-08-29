@@ -182,6 +182,20 @@ similar future decision.
   client-side link or form target should do the same, not reach for a
   named-route helper.
 
+- **`make:invue-page` / `Invue\Panels\Page`** — the blank-canvas counterpart
+  to `make:invue-resource`: a route + an empty `.vue` page, no model, no
+  CRUD. Discovered by the same directory-convention mechanism as `Resource`
+  (`PanelManager::discoverPages()`, gated on extending `Page`), and folded
+  into the same `navigationFor()` list `Resource`s already appear in — a
+  fresh page shows up in the Sidebar with zero extra wiring, matching
+  `filament:make-page`'s own default. Unlike `Resource::$navigationIcon`
+  (defaults `null` — a Resource can show up iconless), `Page::$navigationIcon`
+  defaults to `'file'`, never `null` — a Page has no model to derive a
+  sensible icon from the way a Resource theoretically could, and
+  `Sidebar.vue`'s `<Icon v-if="item.icon">` renders nothing at all for a
+  falsy value, so an unset icon there would silently be a blank nav row
+  forever, not just until someone gets around to picking one.
+
 ## When you catch a gap against this bar
 
 Fix it the same day, in the same session, without waiting to be asked a
