@@ -139,6 +139,18 @@ similar future decision.
   `pencil`/`trash`), add it to that same default registration, don't leave
   it to the user to discover the gap.
 
+- **Generated Vue pages use plain URL strings, never a client-side
+  `route()` call** — `invue:install` doesn't install or wire Ziggy (or
+  Wayfinder), so `route('name')` in a generated `.vue` file throws at
+  runtime ("route is not a function") and blanks the page; nothing in
+  the browser console screams "you forgot a package" the way a build
+  error would. `make:invue-resource`'s Index/Create/Edit stubs compute
+  the literal URL once at generation time (the panel's path + resource
+  slug) instead — same convention `invue:install`'s own `/login`,
+  `/logout`, `/dashboard` already use. Any future generator that needs a
+  client-side link or form target should do the same, not reach for a
+  named-route helper.
+
 ## When you catch a gap against this bar
 
 Fix it the same day, in the same session, without waiting to be asked a
