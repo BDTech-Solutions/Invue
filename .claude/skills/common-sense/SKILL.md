@@ -140,6 +140,19 @@ similar future decision.
   static initials badge — so `invue:install`'s generated Dashboard no
   longer needs its own hand-rolled logout button, and neither does any
   `make:invue-panel`-generated page, since they all compose `PanelLayout`.
+- **`make:invue-resource`'s generated store()/update()/destroy() send a
+  success notification by default**, only when `invue/notifications` is
+  installed (`class_exists()` at generation time) — matches Filament's
+  own scaffolded resources. The whole chain needed closing, not just the
+  Controller call: `invue:install` shares
+  `Notification::flashed()` as the `'notifications'` Inertia prop, and
+  `PanelLayout` resolves a toast container through the registry
+  (`'panels.notificationsContainer'`, mounted once — it's `position:
+  fixed` — so every page under it gets toasts for free) the same way
+  `Topbar` resolves the bell, for the same wrong-composer-direction
+  reason. A Controller call with nothing rendering it, or a container
+  with nothing ever sending to it, would each look "done" in isolation
+  while the feature still doesn't work end to end.
 - **`invue/core`'s `Icon.vue` resolves ANY unregistered name via a lazy,
   code-split `import('@lucide/vue')`** — including a Resource's own
   hand-set `$navigationIcon`, which is a free-form string Invue can't
