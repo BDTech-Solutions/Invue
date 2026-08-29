@@ -34,7 +34,7 @@ function onChange(event) {
         <span v-if="label">{{ label }}</span>
         <select
             :value="modelValue ?? ''"
-            class="rounded-md border-gray-300 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
+            class="rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
             @change="onChange"
         >
             <option value="">{{ placeholder }}</option>

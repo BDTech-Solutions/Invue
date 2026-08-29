@@ -229,7 +229,7 @@ const vIndeterminate = {
                 v-model="table.state.search"
                 type="search"
                 :placeholder="searchPlaceholder"
-                class="block w-full max-w-xs rounded-md border-gray-300 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
+                class="block w-full max-w-xs rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
             />
 
             <slot name="filters" />
@@ -250,7 +250,7 @@ const vIndeterminate = {
                     >
                         <input
                             type="checkbox"
-                            class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            class="h-4 w-4 rounded border border-gray-300 text-green-600 shadow-sm focus:ring-green-500"
                             :checked="!manuallyHidden.has(column.field)"
                             @change="toggleColumn(column.field)"
                         />
@@ -275,7 +275,7 @@ const vIndeterminate = {
                         <th v-if="selectable" scope="col" class="w-10 px-3 py-2">
                             <input
                                 type="checkbox"
-                                class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                class="h-4 w-4 rounded border border-gray-300 text-green-600 shadow-sm focus:ring-green-500"
                                 :checked="allRowsSelected"
                                 v-indeterminate="someRowsSelected && !allRowsSelected"
                                 @change="table.toggleSelectAll()"
@@ -312,7 +312,7 @@ const vIndeterminate = {
                         <td v-if="selectable" class="px-3 py-2">
                             <input
                                 type="checkbox"
-                                class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                class="h-4 w-4 rounded border border-gray-300 text-green-600 shadow-sm focus:ring-green-500"
                                 :checked="table.isSelected(row.id)"
                                 @change="table.toggleSelect(row.id)"
                             />

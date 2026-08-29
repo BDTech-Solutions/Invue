@@ -52,7 +52,7 @@ function onChange(event) {
     <select
         :value="value"
         :disabled="disabled"
-        class="block rounded-md border-gray-300 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
+        class="block rounded-md border border-gray-300 px-2 py-1 text-sm shadow-sm focus:border-green-500 focus:ring-green-500"
         @change="onChange"
     >
         <option v-for="option in normalizedOptions" :key="option.value" :value="option.value">
