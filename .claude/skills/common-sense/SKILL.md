@@ -108,7 +108,17 @@ similar future decision.
   `Select`, `Checkbox`, `RadioGroup`, `CheckboxGroup`) carries its own
   explicit padding/border/sizing utility classes — never rely on
   `@tailwindcss/forms` or any other undocumented external plugin to make
-  a field look finished.
+  a field look finished. Same fix applied to `invue/tables`' own native
+  `<input>`/`<select>` elements (the search box, checkbox
+  columns/cells, `SelectColumn`, both filter selects) after the identical
+  gap turned up there too — this class of bug isn't scoped to one
+  package, re-check every native form control anywhere in the monorepo
+  when it comes up again.
+- **`make:invue-resource`'s default row actions are Edit + Delete**, a
+  real `ActionsColumn` (delete gated behind
+  `requiresConfirmation`) — not just a bare "Edit" text link — matching
+  Filament's own default table actions. Needs `pencil`/`trash`
+  registered by default too (same reasoning as the icon bullet below).
 - **Cross-package UI bridging goes through the registry, never a direct
   import** — `invue/panels` can't composer-depend on `invue/notifications`
   (same wrong-direction problem as forms), so `Topbar.vue`'s notification
