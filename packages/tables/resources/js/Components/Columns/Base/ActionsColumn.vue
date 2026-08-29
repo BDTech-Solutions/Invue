@@ -1,9 +1,10 @@
 <script setup>
 import { computed } from 'vue'
-// The resolved wrapper, not Base/ActionGroup.vue directly — a registry
-// swap of `actions.ActionGroup` should still apply here, same rule every
-// composing component in Invue follows (see PanelLayout -> Sidebar/Topbar).
-import { ActionGroup } from 'invue/actions'
+// The resolved wrappers, not Base/ActionGroup.vue or Base/ActionButton.vue
+// directly — a registry swap of `actions.ActionGroup`/`actions.ActionButton`
+// should still apply here, same rule every composing component in Invue
+// follows (see PanelLayout -> Sidebar/Topbar).
+import { ActionButton, ActionGroup } from 'invue/actions'
 
 const props = defineProps({
     row: {
@@ -19,11 +20,30 @@ const props = defineProps({
         type: [Array, Function],
         default: () => [],
     },
+    // 'menu' (default): a single "⋯" trigger, actions behind a dropdown —
+    // right for a longer action list. 'inline': every visible action
+    // renders as its own small ghost icon button directly in the cell —
+    // right for the common 2-3 action case (edit/delete), always visible,
+    // no click-to-discover step. make:invue-resource's default Index.vue
+    // uses 'inline' for exactly that reason.
+    trigger: {
+        type: String,
+        default: 'menu',
+    },
 })
 
 const resolvedActions = computed(() => (typeof props.actions === 'function' ? props.actions(props.row) : props.actions))
+const visibleActions = computed(() => resolvedActions.value.filter((action) => action.visible !== false))
 </script>
 
 <template>
-    <ActionGroup :actions="resolvedActions" />
+    <div v-if="trigger === 'inline'" class="flex items-center gap-1">
+        <ActionButton
+            v-for="(action, index) in visibleActions"
+            :key="action.label ?? index"
+            variant="ghost"
+            v-bind="action"
+        />
+    </div>
+    <ActionGroup v-else :actions="resolvedActions" />
 </template>

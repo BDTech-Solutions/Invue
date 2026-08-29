@@ -22,6 +22,23 @@ const BUTTON_CLASSES = {
     pink: 'bg-pink-600 text-white hover:bg-pink-500',
 }
 
+// `variant: 'ghost'` — an icon-only, no-background button for repeating an
+// action once per table row (see ActionsColumn's `trigger="inline"`) —
+// a solid pill per row, per action, reads as too loud/heavy at that
+// density. Text-only tint, same color names, no background.
+const GHOST_CLASSES = {
+    gray: 'text-gray-500 hover:bg-gray-100 hover:text-gray-700',
+    red: 'text-red-500 hover:bg-red-50 hover:text-red-700',
+    green: 'text-green-600 hover:bg-green-50 hover:text-green-700',
+    blue: 'text-blue-500 hover:bg-blue-50 hover:text-blue-700',
+    yellow: 'text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700',
+    amber: 'text-amber-600 hover:bg-amber-50 hover:text-amber-700',
+    sky: 'text-sky-500 hover:bg-sky-50 hover:text-sky-700',
+    rose: 'text-rose-500 hover:bg-rose-50 hover:text-rose-700',
+    purple: 'text-purple-500 hover:bg-purple-50 hover:text-purple-700',
+    pink: 'text-pink-500 hover:bg-pink-50 hover:text-pink-700',
+}
+
 const props = defineProps({
     label: {
         type: String,
@@ -70,6 +87,10 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    variant: {
+        type: String,
+        default: 'solid',
+    },
 })
 
 const emit = defineEmits(['click', 'success'])
@@ -93,6 +114,20 @@ function handleClick() {
 
 <template>
     <button
+        v-if="variant === 'ghost'"
+        type="button"
+        class="inline-flex h-7 w-7 items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-60"
+        :class="GHOST_CLASSES[color] ?? GHOST_CLASSES.gray"
+        :disabled="disabled"
+        :aria-label="label"
+        :title="label"
+        @click="handleClick"
+    >
+        <Icon v-if="icon" :name="icon" class="h-4 w-4" />
+        <span v-if="!icon && label">{{ label }}</span>
+    </button>
+    <button
+        v-else
         type="button"
         class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
         :class="BUTTON_CLASSES[color] ?? BUTTON_CLASSES.gray"
