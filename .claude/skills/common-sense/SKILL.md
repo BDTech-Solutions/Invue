@@ -115,10 +115,13 @@ similar future decision.
   package, re-check every native form control anywhere in the monorepo
   when it comes up again.
 - **`make:invue-resource`'s default row actions are Edit + Delete**, a
-  real `ActionsColumn` (delete gated behind
-  `requiresConfirmation`) — not just a bare "Edit" text link — matching
-  Filament's own default table actions. Needs `pencil`/`trash`
-  registered by default too (same reasoning as the icon bullet below).
+  real `ActionsColumn` (delete gated behind `requiresConfirmation`) —
+  not just a bare "Edit" text link — matching Filament's own default
+  table actions. Rendered via `trigger="inline"` (two always-visible
+  ghost icon buttons), not the column's own dropdown default
+  (`trigger="menu"`) — a single "⋯" a user has to discover and click
+  first reads as "no actions" for a set this small; the dropdown is
+  still the right call for a longer action list.
 - **Cross-package UI bridging goes through the registry, never a direct
   import** — `invue/panels` can't composer-depend on `invue/notifications`
   (same wrong-direction problem as forms), so `Topbar.vue`'s notification
@@ -137,17 +140,22 @@ similar future decision.
   static initials badge — so `invue:install`'s generated Dashboard no
   longer needs its own hand-rolled logout button, and neither does any
   `make:invue-panel`-generated page, since they all compose `PanelLayout`.
-- **`invue/core`'s `Icon.vue` renders nothing for an unregistered name** —
-  by design, no icon library is bundled. Any icon name a generator emits
-  on its own (right now: `'layout-dashboard'`, from
-  `PanelManager::navigationFor()`'s synthetic Dashboard nav entry) has to
-  be registered by default too, or it silently never appears. `invue:install`
-  installs `@lucide/vue` and wires
-  `invue.registerIcons({ 'layout-dashboard': LayoutDashboard })` into the
-  generated/patched app entry for exactly this reason — if a future
-  generator starts emitting a new icon name (e.g. an action-column
-  `pencil`/`trash`), add it to that same default registration, don't leave
-  it to the user to discover the gap.
+- **`invue/core`'s `Icon.vue` resolves ANY unregistered name via a lazy,
+  code-split `import('@lucide/vue')`** — including a Resource's own
+  hand-set `$navigationIcon`, which is a free-form string Invue can't
+  predict at generation time. This replaced an earlier explicit-only
+  design (render nothing for an unregistered name) specifically because
+  that free-form case can't be pre-registered by any generator.
+  **`invue:install`'s generated app entry must never statically import
+  anything from `@lucide/vue`** — even one named icon import
+  (`import { Bell } from '@lucide/vue'`) makes Rolldown fold Icon.vue's
+  dynamic import into the SAME eager chunk instead of splitting it out
+  (`[INEFFECTIVE_DYNAMIC_IMPORT]`), pulling the whole ~2000-icon set
+  (+164KB gzipped, measured) into every page's initial load instead of
+  only the pages that actually hit an unregistered icon. If a future
+  default needs to be *guaranteed* available synchronously with zero
+  flash, that's a real tension against this — don't reach for a static
+  import to solve it without re-reading this note first.
 
 - **Generated Vue pages use plain URL strings, never a client-side
   `route()` call** — `invue:install` doesn't install or wire Ziggy (or
