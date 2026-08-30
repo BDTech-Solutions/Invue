@@ -196,6 +196,32 @@ similar future decision.
   falsy value, so an unset icon there would silently be a blank nav row
   forever, not just until someone gets around to picking one.
 
+- **`make:invue-relation-manager`** — automates what was previously entirely
+  hand-wired (see the Panels doc page's "Relation managers" section, and the
+  real `Post`↔`Comment` example in `sandbox/`): a real Controller
+  (`store()`/`destroy()`) + FormRequest for the related model, nested routes
+  appended to `routes/web.php`, and two PATCHES to files
+  `make:invue-resource` already generated — the parent Controller's
+  `edit()` (adds the `TableQuery::for($parent->relation())` prop, and the
+  `Request $request` parameter `edit()` didn't need before) and the parent's
+  Edit.vue (adds the `<RelationManager>` block). Reads the relation directly
+  off the model (`$parent->{$relation}()->getRelated()`), never guesses the
+  related class from the relation's name — only `hasMany` supported so far.
+  Named `{Parent}{Related}Controller`/`Request`, not just
+  `{Related}Controller` — avoids colliding with a real standalone Resource
+  for the same related model, or with a second relation manager pointing at
+  the same related model from a different parent. The two patches are
+  best-effort, same posture as `invue:install`'s own patches: an exact
+  string match against the known generated shape, applied only when it
+  still matches (nothing hand-edited in between) — otherwise the exact
+  snippet is printed to paste by hand instead of guessing. The inline
+  "add" form in `RelationManager`'s `#actions` slot binds straight to
+  `{relation}Form.{field}` via plain `<input>`/`<Checkbox>`, deliberately
+  NOT `useInvueField` — the parent page's own fields already occupy those
+  destructured-ref names in the same `<script setup>` scope (a `Post.body`
+  field and a `Comment.body` field would collide), and this is a compact
+  toolbar-style row, not a full validated page form.
+
 ## When you catch a gap against this bar
 
 Fix it the same day, in the same session, without waiting to be asked a

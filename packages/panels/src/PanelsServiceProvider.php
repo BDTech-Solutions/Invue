@@ -5,6 +5,7 @@ namespace Invue\Panels;
 use Illuminate\Support\ServiceProvider;
 use Invue\Panels\Console\Commands\MakePageCommand;
 use Invue\Panels\Console\Commands\MakePanelCommand;
+use Invue\Panels\Console\Commands\MakeRelationManagerCommand;
 use Invue\Panels\Console\Commands\MakeResourceCommand;
 
 class PanelsServiceProvider extends ServiceProvider
@@ -21,6 +22,7 @@ class PanelsServiceProvider extends ServiceProvider
                 MakePanelCommand::class,
                 MakeResourceCommand::class,
                 MakePageCommand::class,
+                MakeRelationManagerCommand::class,
             ]);
         }
     }
