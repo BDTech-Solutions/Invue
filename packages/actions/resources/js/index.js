@@ -1,4 +1,6 @@
 export { default as ActionButton } from './Components/ActionButton.vue'
 export { default as ActionGroup } from './Components/ActionGroup.vue'
 export { default as ConfirmationModal } from './Components/ConfirmationModal.vue'
+export { default as FormAction } from './Components/FormAction.vue'
+export { default as FormModal } from './Components/FormModal.vue'
 export { useInvueAction } from './composables/useInvueAction'

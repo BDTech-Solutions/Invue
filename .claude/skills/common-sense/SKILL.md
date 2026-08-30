@@ -241,6 +241,20 @@ similar future decision.
   entry below for why plain `<input>`/`v-model="xForm.field"` wins there
   instead.
 
+- **`FormAction`/`FormModal` (`invue/actions`)** — a trigger button bundled
+  with a modal, the same shape `ActionButton` already bundles with
+  `ConfirmationModal`, but the modal's body is your own default slot —
+  real `invue/forms` fields wired to your own `useForm()`, not a schema
+  the component builds for you. `open` is a plain `v-model` the caller
+  owns; `FormAction` never closes itself on `@submit`, since it has no
+  way to know whether the request you run inside that handler actually
+  succeeded — same "shapes nothing about what happens next" boundary
+  `TableQuery`/`SelectOptions` keep on the backend side. Row-level form
+  actions (inside `ActionsColumn`'s per-row descriptor array) are NOT
+  covered — that array is plain data, not components, and a form needs
+  real per-row reactive state that shape can't carry; that's a
+  genuinely separate, bigger piece of work if it's ever asked for.
+
 ## When you catch a gap against this bar
 
 Fix it the same day, in the same session, without waiting to be asked a
