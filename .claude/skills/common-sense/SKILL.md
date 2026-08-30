@@ -222,6 +222,25 @@ similar future decision.
   field and a `Comment.body` field would collide), and this is a compact
   toolbar-style row, not a full validated page form.
 
+- **`Select` (`invue/forms`)** — rebuilt from a bare native `<select>` into
+  a real combobox (Teleported floating panel, same click-outside/scroll/
+  resize-reposition recipe as `invue/actions`' `ActionGroup` menu, copied
+  into a local `useMountedOnClient()` since `invue/forms` can't depend on
+  `invue/actions`): `searchable` filters `options` client-side,
+  `maxVisibleItems` caps the panel's height, and `url` turns it into a
+  debounced remote-search field (only the most recently issued request is
+  ever applied — a slow response for a stale keystroke can't clobber a
+  newer one). `Invue\Forms\Support\SelectOptions` is the backend
+  counterpart: `fromEnum()` (a backed enum's `label()` method wins over a
+  headline-of-the-name fallback — same convention
+  `spatie/laravel-typescript-transformer` itself documents), `fromQuery()`
+  (no limit — small lookup tables only), and `search()` (the actual
+  one-line-controller remote-search backend, capped at 50 rows by
+  default). The inline "add" row inside a `RelationManager`'s `#actions`
+  slot deliberately does NOT use this — see the `make:invue-relation-manager`
+  entry below for why plain `<input>`/`v-model="xForm.field"` wins there
+  instead.
+
 ## When you catch a gap against this bar
 
 Fix it the same day, in the same session, without waiting to be asked a
