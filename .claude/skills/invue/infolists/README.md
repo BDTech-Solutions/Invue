@@ -91,15 +91,35 @@ rounded-lg, p-4/p-5, `text-xs uppercase text-gray-400` header) to copy if
 either card gets a registry swap, not a shared component to extract
 today — revisit if a third "titled card" need shows up.
 
+## Auto-generated via `make:invue-resource --view`
+
+`packages/panels`' `MakeResourceCommand` can scaffold a `Show.vue` for you
+— `--view`, or answering yes to the interactive prompt it asks otherwise
+(default no, matching Filament's own List/Create/Edit-by-default,
+View-as-opt-in posture). Gated behind
+`class_exists(Invue\Infolists\InfolistsServiceProvider::class)`: `panels`
+can't composer-depend on `infolists` (wrong direction — same reasoning as
+the `notifications` bridge), so without the package installed the
+question is never even asked, `--view` alone just warns and no-ops.
+
+What actually makes `show` reachable: the generated `{Model}Resource`
+gets `protected static bool $hasView = true;`, and
+`PanelManager::registerRoutes()` reads `Resource::hasView()` to decide
+whether to call `->except('show')` on that Resource's `Route::resource()`
+— every other Resource still gets it excluded exactly as before. Same
+static-metadata pattern `$navigationIcon`/`$navigationGroup` already use,
+not a new mechanism.
+
+The generated page is the same shape as the hand-written
+`Posts/Show.vue` below: `Section` + `Infolist :columns="2"` + one `Entry`
+per inferred field, each wrapping the same table column
+(`TextColumn`/`IconColumn`) and kind-matched formatting option the
+Index page's `Table` uses for that field (`FieldRenderer::infolistEntry()`,
+mirroring `tableColumn()`). Breadcrumb trail is `{Plural} / {Model} #{id}`
+— see `invue/panels`' Breadcrumbs section on the Panels doc page.
+
 ## What this doesn't attempt yet
 
-- **No `show` route on `PanelManager`'s generic `Route::resource()` set** —
-  still registered `->except('show')`. Wire your own
-  `Route::get('/{resource}/{id}', [Controller::class, 'show'])->middleware([..., ShareInvuePanelData::class])`,
-  same posture as tables' bulk actions and the comments relation manager.
-  Promoting this to a framework-level convention (auto-generating
-  `Show.vue` from `make:invue-resource`, dropping `->except('show')`) is a
-  real follow-up once the pattern proves out further, not attempted here.
 - **No relation entries** (Filament's `TextEntry::make('author.name')`-
   style dot-notation into a related model) — `TextColumn`'s `field` prop
   already supports dot notation via `getNestedValue()`, so this likely
@@ -112,14 +132,25 @@ today — revisit if a third "titled card" need shows up.
 
 ## Verified in `sandbox/`
 
-`Invue/Admin/Posts/Show.vue` (hand-written — not `make:invue-resource`-
-generated, see the note above) — a "View" row action added to
+`Invue/Admin/Posts/Show.vue` (hand-written, predates `--view` — see
+above for the generated equivalent) — a "View" row action added to
 `Posts/Index.vue` links here; the page shows title/published/body/created/
 comment-count (the last one plain text, not a column — no formatting
 needed) in a 2-column `Section` + `Infolist`, with an `Edit` button and a
 back link to the index. Checked with Playwright: `ActionsColumn` dropdown
 correctly lists View alongside Edit/Delete, navigation both ways, zero
 console errors, production `vite build` passes.
+
+`make:invue-resource Gadget --panel=admin --view` against a disposable
+model (string/text/boolean/number columns) — verified with Playwright:
+`GadgetResource::$hasView` gets set, `show` route actually registers
+(`route:list` — absent for a Resource without `--view`, e.g. `posts`'
+generic `Route::resource()` set), `/admin/gadgets/{id}` renders the
+breadcrumb trail (`Gadgets / Gadget #1`) and every inferred field with
+correct values (including the `IconColumn` boolean), and the Edit button
+navigates to the right URL. Cleaned up after (disposable model/migration/
+generated files removed, not committed — `sandbox/` is gitignored
+wholesale anyway).
 
 **Gotcha hit while wiring this up, not a bug in the package itself:**
 `@invue-domain/vite-plugin` discovers `vendor/invue/*` packages once, at Vite

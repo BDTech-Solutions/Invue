@@ -136,7 +136,7 @@ tabela `notifications`, endpoint de fetch/mark-as-read, sininho com
 contador de não lidas no Topbar. Layout natural: reaproveita o Topbar já
 customizável (um slot novo ou um registry key `notifications.Bell`).
 
-### 6. Infolists — ✅ feito (2026-08-27)
+### 6. Infolists — ✅ feito (2026-08-27), gerador integrado (2026-09-04)
 A decisão de arquitetura resolveu sozinha assim que foi olhada de perto:
 nem pacote novo duplicando formatação, nem modo `readonly` em `forms` —
 `invue/tables`' `TextColumn`/`IconColumn`/etc já são componentes
@@ -145,6 +145,17 @@ standalone (`row`+`field`, sem nada table-específico), então
 `Section` card) por cima deles. Provado em `/admin/posts/{post}` (nova
 página `Show.vue`, ação "View" na `ActionsColumn`, rota `show` escrita na
 mão — ver README de `invue/infolists`).
+
+A rota `show` escrita na mão em `/admin/posts` era o próprio gap: nenhum
+outro Resource gerado tinha como ganhar uma página de visualização sem
+repetir esse trabalho manual (Controller::show(), Show.vue, e destravar
+a rota — `PanelManager` excluía `show` incondicionalmente). Fechado:
+`make:invue-resource` pergunta (`--view` pula a pergunta) se o Resource
+deve ganhar uma Show.vue de fábrica; quando sim, `{Model}Resource` marca
+`$hasView = true` e é isso que `PanelManager::registerRoutes()` lê pra
+decidir se `show` fica registrada. Zero classe nova pra decidir, mesmo
+padrão de metadata estático que `$navigationIcon`/`$navigationGroup` já
+usam.
 
 Páginas só-leitura (visualizar um registro sem abrir formulário editável)
 — hoje o Invue só tem `forms` (editável) e `tables` (lista). Um recurso

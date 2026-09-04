@@ -265,9 +265,12 @@ globs every `*Resource.php` under the panel's `getResourcesDirectory()`
 mismatch throws immediately naming the bad file, never a silent skip. This
 means **no route wiring step** after `make:invue-resource` — the next
 request just picks the new Resource up. Routes are registered per
-discovered Resource as `Route::resource($resource::getSlug(), $resource::getControllerClass($panel))->except('show')`,
+discovered Resource as `Route::resource($resource::getSlug(), $resource::getControllerClass($panel))`,
 grouped under the panel's `path()`/`middleware()`/route-name-prefix, plus
-`ShareInvuePanelData` in the middleware stack.
+`ShareInvuePanelData` in the middleware stack. `->except('show')` is
+conditional, not blanket: it's applied unless `$resource::hasView()` says
+otherwise — see `make:invue-resource --view` below and
+`.claude/skills/invue/infolists/README.md`.
 
 ## `make:invue-resource` — schema-inferred, not a stub
 
@@ -298,16 +301,20 @@ Generated per resource, into the panel's configured directories:
 
 ```
 {panel}/Resources/{Model}Resource.php
-{panel}/Http/Controllers/{Model}Controller.php   index (via Invue\Tables\TableQuery, same pattern as sandbox's InvueTablesDemoController) / create / store / edit / update / destroy
+{panel}/Http/Controllers/{Model}Controller.php   index (via Invue\Tables\TableQuery, same pattern as sandbox's InvueTablesDemoController) / create / store / [show] / edit / update / destroy
 {panel}/Http/Requests/{Model}Request.php
 {panel}/Pages/{ModelPlural}/{Index,Create,Edit}.vue
+{panel}/Pages/{ModelPlural}/Show.vue              only with --view
 ```
 
-`make:invue-resource {Name} --panel=admin --model=App\Models\Other --force`
+`make:invue-resource {Name} --panel=admin --model=App\Models\Other --view --force`
 — `--panel` defaults to the sole registered panel if there's no ambiguity;
 `--model` only needed when the resource name differs from the model class;
-`--force` overwrites files that already exist (refused by default, same as
-Laravel's own generators).
+`--view` scaffolds `Show.vue` + `Controller::show()` and sets
+`{Model}Resource::$hasView = true` (needs `invue/infolists` installed;
+without the flag you're asked interactively, default no — see
+`invue/infolists`' README); `--force` overwrites files that already exist
+(refused by default, same as Laravel's own generators).
 
 ## Verified in `sandbox/`
 
@@ -330,8 +337,18 @@ updating live, zero console errors, hand-written `Comment` model/migration
 + two routes (not generated — see the note on nested-resource scaffolding
 above). And once more with a `Posts/Show.vue` `invue/infolists` page — a
 "View" row action added to `Posts/Index.vue`, a hand-wired `show` route
-(the generic `Route::resource()` set still excludes it), zero console
-errors. See `invue/infolists`' own README for the package itself.
+(predates `make:invue-resource --view`, which now generates this
+automatically for a new Resource), zero console errors. See
+`invue/infolists`' own README for the package itself.
+
+Extended 2026-09-04 with `make:invue-resource --view` itself: a
+disposable `Gadget` resource (string/text/boolean/number columns)
+generated with `--view`, verified end-to-end via Playwright —
+`GadgetResource::$hasView` set, `show` route actually registered where a
+Resource without `--view` (e.g. `posts`' generic `Route::resource()` set)
+still excludes it, `/admin/gadgets/{id}` renders correctly (breadcrumb,
+every field, Edit link), zero console errors. See `invue/infolists`'
+README for the full writeup and cleanup notes.
 
 ## V1 scope — what this deliberately doesn't attempt yet
 
@@ -345,7 +362,6 @@ and a `make:invue-panel`/`make:invue-resource` "undo" (regenerating with
 `--force` overwrites; there's no scaffolding removal command). Row/bulk
 actions and navigation grouping/badges shipped 2026-08-27 — see
 "Navigation grouping and badges" above and `invue/tables`' README. A
-`show`/view page is also possible now (`invue/infolists`, hand-wired
-route — see that package's README), but `Route::resource(...)` here
-still registers `->except('show')`; `make:invue-resource` doesn't
-generate a `Show.vue`/`show()` yet.
+`show`/view page (`invue/infolists`) shipped as a `make:invue-resource
+--view` opt-in 2026-09-04 — see `invue/infolists`' README, "Auto-generated
+via `make:invue-resource --view`".
