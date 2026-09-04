@@ -124,11 +124,17 @@ const displayValue = computed(() => {
     }
 
     if (props.money) {
-        return new Intl.NumberFormat(undefined, { style: 'currency', currency: props.money }).format(Number(value))
+        const amount = Number(value)
+
+        return Number.isNaN(amount)
+            ? String(value)
+            : new Intl.NumberFormat(undefined, { style: 'currency', currency: props.money }).format(amount)
     }
 
     if (props.numeric) {
-        return new Intl.NumberFormat().format(Number(value))
+        const amount = Number(value)
+
+        return Number.isNaN(amount) ? String(value) : new Intl.NumberFormat().format(amount)
     }
 
     if (props.since) {

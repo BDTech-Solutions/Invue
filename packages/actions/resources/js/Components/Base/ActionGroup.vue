@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { Icon } from 'invue/core'
 import ConfirmationModal from '../ConfirmationModal.vue'
 import { useInvueAction } from '../../composables/useInvueAction'
@@ -115,6 +115,17 @@ function selectAction(action) {
     close()
     run(action)
 }
+
+// Without this, closing over `open` (e.g. navigating away via Inertia
+// while the menu is open) would leave the scroll/resize/mousedown/keydown
+// listeners attached to window/document forever — the same leak
+// Base/FormModal.vue's onBeforeUnmount already guards against.
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', updatePosition, true)
+    window.removeEventListener('resize', updatePosition)
+    document.removeEventListener('mousedown', handleOutsideClick)
+    document.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>

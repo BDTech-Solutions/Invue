@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { Icon } from 'invue/core'
 import { useMountedOnClient } from '../../composables/useMountedOnClient'
 
@@ -263,6 +263,18 @@ function toggle() {
         openPanel()
     }
 }
+
+// Without this, unmounting while the panel is open (e.g. this Select sits
+// in a Repeater row that gets removed, or an Inertia navigation happens
+// mid-interaction) would leave the scroll/resize/mousedown/keydown
+// listeners attached to window/document forever — same leak
+// invue/actions' Base/ActionGroup.vue already guards against.
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', updatePosition, true)
+    window.removeEventListener('resize', updatePosition)
+    document.removeEventListener('mousedown', handleOutsideClick)
+    document.removeEventListener('keydown', handleGlobalKeydown)
+})
 
 function choose(option) {
     emit('update:modelValue', option.value)

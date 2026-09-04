@@ -49,11 +49,28 @@ export function useInvueTable(propName, options = {}) {
         })
     }
 
+    // Resetting `state.page` to 1 below can itself trigger the `state.page`
+    // watcher further down (when the page wasn't already 1), which would
+    // call `reload()` a second time — immediately and un-debounced — right
+    // alongside the reload these watchers already trigger themselves. That
+    // silently defeats the search debounce and double-fires every
+    // sort/filter/perPage change. This flag lets the page watcher recognize
+    // "I was just reset by another watcher that's already handling the
+    // reload" and skip its own redundant one.
+    let suppressPageReload = false
+
+    function resetToFirstPage() {
+        if (state.page !== 1) {
+            suppressPageReload = true
+            state.page = 1
+        }
+    }
+
     let searchTimer
     watch(
         () => state.search,
         () => {
-            state.page = 1
+            resetToFirstPage()
             clearTimeout(searchTimer)
             searchTimer = setTimeout(reload, debounceMs)
         },
@@ -62,13 +79,20 @@ export function useInvueTable(propName, options = {}) {
     watch(
         () => [state.sort, state.direction, state.filters, state.perPage],
         () => {
-            state.page = 1
+            resetToFirstPage()
             reload()
         },
         { deep: true },
     )
 
-    watch(() => state.page, reload)
+    watch(() => state.page, () => {
+        if (suppressPageReload) {
+            suppressPageReload = false
+            return
+        }
+
+        reload()
+    })
 
     function toggleSort(column) {
         if (state.sort !== column) {
